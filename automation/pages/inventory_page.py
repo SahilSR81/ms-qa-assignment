@@ -24,7 +24,7 @@ class InventoryPage(BasePage):
         return 0
 
     def go_to_cart(self):
-        self.click(self.CART_LINK)
+        self.js_click(self.CART_LINK)
         self.wait_for_url("cart.html")
 
     def logout(self):
