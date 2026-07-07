@@ -1,0 +1,37 @@
+{
+	"id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+	"name": "MeetStream AI - API Testing",
+	"values": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "event_id",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "registration_id",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "register_email",
+			"value": "testuser@example.com",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment"
+}

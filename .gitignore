@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+venv/
+.venv/
+ENV/
+
+# pytest
+.pytest_cache/
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Newman reports
+report.html
+
+# Debug scripts
+test_debug*.py
+
+# Selenium screenshots
+*.png
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/

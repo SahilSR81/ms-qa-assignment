@@ -1,0 +1,33 @@
+import pytest
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
+
+def pytest_addoption(parser):
+    parser.addoption("--browser_name", action="store", default="chrome")
+    parser.addoption("--headless", action="store_true", default=True, help="Run browser in headless mode")
+
+@pytest.fixture(scope="class")
+def setup(request):
+    browser_name = request.config.getoption("browser_name")
+    headless = request.config.getoption("headless")
+    
+    if browser_name == "chrome":
+        options = ChromeOptions()
+        if headless:
+            options.add_argument("--headless=new")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        driver = webdriver.Chrome(options=options)
+    elif browser_name == "firefox":
+        options = FirefoxOptions()
+        if headless:
+            options.add_argument("-headless")
+        driver = webdriver.Firefox(options=options)
+    else:
+        raise ValueError(f"Browser {browser_name} is not supported.")
+        
+    driver.maximize_window()
+    request.cls.driver = driver
+    yield
+    driver.quit()

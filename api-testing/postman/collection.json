@@ -1,0 +1,1078 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "MeetStream AI — API Test Suite",
+		"description": "## MeetStream AI API Test Suite\n\nEnd-to-end API test collection for the MeetStream AI event management platform.\n\n### Assumptions (Undocumented Endpoints)\n\nThe following assumptions were made about request/response shapes for endpoints without a provided contract:\n\n**POST /api/register**\n- Request: `{ \"name\": \"string\", \"email\": \"string\", \"password\": \"string\" }`\n- 201 Created: `{ \"message\": \"User registered successfully\", \"userId\": \"string\" }`\n- 400 Bad Request: `{ \"error\": \"string\" }` (missing/invalid fields)\n- 409 Conflict: `{ \"error\": \"Email already registered\" }` (duplicate registration)\n\n**GET /api/events**\n- No request body required; Authorization header with Bearer token.\n- 200 OK: `{ \"events\": [ { \"id\": \"string\", \"title\": \"string\", \"description\": \"string\", \"date\": \"ISO8601 string\", \"location\": \"string\", \"capacity\": number, \"registered\": number } ] }`\n- 401 Unauthorized: `{ \"error\": \"Unauthorized\" }`\n\n**POST /api/events/register**\n- Request: `{ \"eventId\": \"string\" }`; Authorization header with Bearer token.\n- 200 OK: `{ \"message\": \"Successfully registered for event\", \"registrationId\": \"string\" }`\n- 400 Bad Request: `{ \"error\": \"string\" }` (missing eventId)\n- 401 Unauthorized: `{ \"error\": \"Unauthorized\" }`\n- 409 Conflict: `{ \"error\": \"Already registered for this event\" }` (duplicate)\n- 422 Unprocessable Entity: `{ \"error\": \"Event is full\" }` (capacity reached)\n\n**POST /api/payment**\n- Request: `{ \"registrationId\": \"string\", \"amount\": number, \"currency\": \"string\", \"paymentMethod\": \"string\" }`; Authorization header with Bearer token.\n- 200 OK: `{ \"message\": \"Payment successful\", \"transactionId\": \"string\" }`\n- 400 Bad Request: `{ \"error\": \"string\" }` (missing/invalid fields)\n- 401 Unauthorized: `{ \"error\": \"Unauthorized\" }`\n- 422 Unprocessable Entity: `{ \"error\": \"Invalid amount\" }` (zero/negative amount)\n\n**GET /api/registrations**\n- No request body; Authorization header with Bearer token.\n- 200 OK: `{ \"registrations\": [ { \"registrationId\": \"string\", \"eventId\": \"string\", \"eventTitle\": \"string\", \"registeredAt\": \"ISO8601 string\", \"paymentStatus\": \"string\" } ] }`\n- 401 Unauthorized: `{ \"error\": \"Unauthorized\" }`\n\n### Token Chaining\nThe Login (Happy Path) request captures the JWT token from the response and stores it in the `token` environment variable. All subsequent authenticated requests reference `{{token}}` in their Authorization header — no hardcoded tokens anywhere.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Register",
+			"description": "POST /api/register — User registration endpoint.",
+			"item": [
+				{
+					"name": "Register — Happy Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 201 Created', function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test('Response contains userId', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('userId');",
+									"    pm.expect(typeof jsonData.userId).to.equal('string');",
+									"});",
+									"",
+									"pm.test('Response contains success message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData.message).to.include('registered');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"{{register_email}}\",\n    \"password\": \"SecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "register"]
+						},
+						"description": "Registers a new user with valid name, email, and password."
+					},
+					"response": []
+				},
+				{
+					"name": "Register — Missing Required Field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400 Bad Request', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('Response contains error message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(typeof jsonData.error).to.equal('string');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"missing_password@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "register"]
+						},
+						"description": "Attempts registration with the password field omitted. Expects 400."
+					},
+					"response": []
+				},
+				{
+					"name": "Register — Duplicate Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 409 Conflict', function () {",
+									"    pm.response.to.have.status(409);",
+									"});",
+									"",
+									"pm.test('Response indicates duplicate registration', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error.toLowerCase()).to.include('already');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"{{register_email}}\",\n    \"password\": \"SecurePass123!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "register"]
+						},
+						"description": "Attempts to register with the same email used in the happy-path request. Expects 409 Conflict."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Login",
+			"description": "POST /api/login — User authentication endpoint. The happy-path request captures the JWT token for downstream use.",
+			"item": [
+				{
+					"name": "Login — Happy Path (captures token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains a JWT token string', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.expect(typeof jsonData.token).to.equal('string');",
+									"    pm.expect(jsonData.token.length).to.be.above(0);",
+									"});",
+									"",
+									"// Capture token for chaining to authenticated endpoints",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.token) {",
+									"    pm.environment.set('token', jsonData.token);",
+									"}",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "login"]
+						},
+						"description": "Logs in with valid credentials per the provided contract. Captures the JWT token into the `token` environment variable for use by all subsequent authenticated requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Login — Invalid Credentials",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401 Unauthorized', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response contains error field with credential message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error).to.equal('Invalid credentials');",
+									"});",
+									"",
+									"pm.test('Response does not leak a token', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.not.have.property('token');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"wrong_password\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "login"]
+						},
+						"description": "Attempts login with an incorrect password. Expects 401 per the provided contract."
+					},
+					"response": []
+				},
+				{
+					"name": "Login — Missing Email Field",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400 Bad Request', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('Response contains error message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(typeof jsonData.error).to.equal('string');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "login"]
+						},
+						"description": "Attempts login with the email field omitted entirely. Expects 400."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Events",
+			"description": "GET /api/events — Retrieves available events. Requires authentication.",
+			"item": [
+				{
+					"name": "Get Events — Happy Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains events array', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('events');",
+									"    pm.expect(jsonData.events).to.be.an('array');",
+									"});",
+									"",
+									"pm.test('Each event has required fields with correct types', function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.events.length > 0) {",
+									"        var event = jsonData.events[0];",
+									"        pm.expect(event).to.have.property('id');",
+									"        pm.expect(event).to.have.property('title');",
+									"        pm.expect(typeof event.title).to.equal('string');",
+									"        pm.expect(event).to.have.property('date');",
+									"        pm.expect(event).to.have.property('capacity');",
+									"        pm.expect(typeof event.capacity).to.equal('number');",
+									"    }",
+									"});",
+									"",
+									"// Capture first event ID for downstream use",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.events && jsonData.events.length > 0) {",
+									"    pm.environment.set('event_id', jsonData.events[0].id);",
+									"}",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/events",
+							"host": ["{{base_url}}"],
+							"path": ["api", "events"]
+						},
+						"description": "Fetches the list of available events using a valid token. Captures the first event's ID into `event_id` for event registration."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Events — Missing Auth Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401 Unauthorized', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response contains error field', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"});",
+									"",
+									"pm.test('Response does not contain events data', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.not.have.property('events');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/events",
+							"host": ["{{base_url}}"],
+							"path": ["api", "events"]
+						},
+						"description": "Requests events without any Authorization header. Expects 401."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Events — Malformed Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401 Unauthorized', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response contains error field', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid.malformed.token"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/events",
+							"host": ["{{base_url}}"],
+							"path": ["api", "events"]
+						},
+						"description": "Requests events with a deliberately malformed JWT. Expects 401."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Event Registration",
+			"description": "POST /api/events/register — Register the authenticated user for an event.",
+			"item": [
+				{
+					"name": "Register for Event — Happy Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains registrationId', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('registrationId');",
+									"    pm.expect(typeof jsonData.registrationId).to.equal('string');",
+									"});",
+									"",
+									"pm.test('Response contains success message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData.message.toLowerCase()).to.include('registered');",
+									"});",
+									"",
+									"// Capture registrationId for payment",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.registrationId) {",
+									"    pm.environment.set('registration_id', jsonData.registrationId);",
+									"}",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eventId\": \"{{event_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/events/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "events", "register"]
+						},
+						"description": "Registers the authenticated user for the event captured from GET /api/events. Captures `registrationId` for the payment step."
+					},
+					"response": []
+				},
+				{
+					"name": "Register for Event — Missing eventId",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400 Bad Request', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('Response contains error message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(typeof jsonData.error).to.equal('string');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/events/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "events", "register"]
+						},
+						"description": "Attempts event registration with an empty body (no eventId). Expects 400."
+					},
+					"response": []
+				},
+				{
+					"name": "Register for Event — Missing Auth Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401 Unauthorized', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response contains error field', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eventId\": \"{{event_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/events/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "events", "register"]
+						},
+						"description": "Attempts event registration without Authorization header. Expects 401."
+					},
+					"response": []
+				},
+				{
+					"name": "Register for Event — Duplicate Registration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 409 Conflict', function () {",
+									"    pm.response.to.have.status(409);",
+									"});",
+									"",
+									"pm.test('Response indicates duplicate registration', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error.toLowerCase()).to.include('already');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"eventId\": \"{{event_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/events/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "events", "register"]
+						},
+						"description": "Attempts to register for the same event a second time. Expects 409 Conflict. Placed after the happy-path request so event_id is already registered."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Payment",
+			"description": "POST /api/payment — Process payment for an event registration.",
+			"item": [
+				{
+					"name": "Payment — Happy Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains transactionId', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('transactionId');",
+									"    pm.expect(typeof jsonData.transactionId).to.equal('string');",
+									"});",
+									"",
+									"pm.test('Response contains success message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData.message.toLowerCase()).to.include('successful');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"registrationId\": \"{{registration_id}}\",\n    \"amount\": 49.99,\n    \"currency\": \"USD\",\n    \"paymentMethod\": \"credit_card\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payment"]
+						},
+						"description": "Processes payment for the registration captured from POST /api/events/register."
+					},
+					"response": []
+				},
+				{
+					"name": "Payment — Missing Required Fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 400 Bad Request', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('Response contains error message', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(typeof jsonData.error).to.equal('string');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"registrationId\": \"{{registration_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payment"]
+						},
+						"description": "Attempts payment with amount, currency, and paymentMethod omitted. Expects 400."
+					},
+					"response": []
+				},
+				{
+					"name": "Payment — Missing Auth Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401 Unauthorized', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response contains error field', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"registrationId\": \"{{registration_id}}\",\n    \"amount\": 49.99,\n    \"currency\": \"USD\",\n    \"paymentMethod\": \"credit_card\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payment"]
+						},
+						"description": "Attempts payment without Authorization header. Expects 401."
+					},
+					"response": []
+				},
+				{
+					"name": "Payment — Invalid Amount (negative)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422 Unprocessable Entity', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response indicates invalid amount', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error.toLowerCase()).to.include('amount');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"registrationId\": \"{{registration_id}}\",\n    \"amount\": -10,\n    \"currency\": \"USD\",\n    \"paymentMethod\": \"credit_card\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payment"]
+						},
+						"description": "Attempts payment with a negative amount. Expects 422 Unprocessable Entity."
+					},
+					"response": []
+				},
+				{
+					"name": "Payment — Zero Amount",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 422 Unprocessable Entity', function () {",
+									"    pm.response.to.have.status(422);",
+									"});",
+									"",
+									"pm.test('Response indicates invalid amount', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"    pm.expect(jsonData.error.toLowerCase()).to.include('amount');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"registrationId\": \"{{registration_id}}\",\n    \"amount\": 0,\n    \"currency\": \"USD\",\n    \"paymentMethod\": \"credit_card\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "payment"]
+						},
+						"description": "Attempts payment with a zero amount. Expects 422 Unprocessable Entity."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Registrations",
+			"description": "GET /api/registrations — Retrieves the authenticated user's event registrations.",
+			"item": [
+				{
+					"name": "Get Registrations — Happy Path",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200 OK', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response contains registrations array', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('registrations');",
+									"    pm.expect(jsonData.registrations).to.be.an('array');",
+									"});",
+									"",
+									"pm.test('Each registration has required fields', function () {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.registrations.length > 0) {",
+									"        var reg = jsonData.registrations[0];",
+									"        pm.expect(reg).to.have.property('registrationId');",
+									"        pm.expect(reg).to.have.property('eventId');",
+									"        pm.expect(reg).to.have.property('eventTitle');",
+									"        pm.expect(typeof reg.eventTitle).to.equal('string');",
+									"        pm.expect(reg).to.have.property('registeredAt');",
+									"        pm.expect(reg).to.have.property('paymentStatus');",
+									"    }",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/registrations",
+							"host": ["{{base_url}}"],
+							"path": ["api", "registrations"]
+						},
+						"description": "Fetches all event registrations for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Registrations — Missing Auth Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401 Unauthorized', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response contains error field', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"});",
+									"",
+									"pm.test('Response does not contain registrations data', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.not.have.property('registrations');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/registrations",
+							"host": ["{{base_url}}"],
+							"path": ["api", "registrations"]
+						},
+						"description": "Requests registrations without Authorization header. Expects 401."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Registrations — Malformed Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 401 Unauthorized', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response contains error field', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('error');",
+									"});",
+									"",
+									"pm.test('Response time is below 2000ms', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer invalid.malformed.token"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/registrations",
+							"host": ["{{base_url}}"],
+							"path": ["api", "registrations"]
+						},
+						"description": "Requests registrations with a deliberately malformed JWT. Expects 401."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
