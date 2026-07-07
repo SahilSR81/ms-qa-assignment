@@ -25,6 +25,7 @@ class InventoryPage(BasePage):
 
     def go_to_cart(self):
         self.click(self.CART_LINK)
+        self.wait_for_url("cart.html")
 
     def logout(self):
         self.click(self.BURGER_MENU_BTN)

@@ -3,10 +3,14 @@ name: Python application
 on:
   push:
     branches: [ main, master ]
+    paths:
+      - 'automation/**'
+      - '.github/workflows/python-app.yml'
   pull_request:
     branches: [ main, master ]
-    paths-ignore:
-      - 'README.md'
+    paths:
+      - 'automation/**'
+      - '.github/workflows/python-app.yml'
 
 jobs:
   build:

@@ -3,10 +3,14 @@ name: API Tests (Newman)
 on:
   push:
     branches: [ main, master ]
+    paths:
+      - 'api-testing/**'
+      - '.github/workflows/api-tests.yml'
   pull_request:
     branches: [ main, master ]
-    paths-ignore:
-      - 'README.md'
+    paths:
+      - 'api-testing/**'
+      - '.github/workflows/api-tests.yml'
 
 jobs:
   api-tests:

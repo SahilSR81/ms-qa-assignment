@@ -21,3 +21,4 @@ class CartPage(BasePage):
 
     def continue_shopping(self):
         self.click(self.CONTINUE_SHOPPING_BTN)
+        self.wait_for_url("inventory.html")

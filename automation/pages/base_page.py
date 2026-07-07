@@ -33,5 +33,8 @@ class BasePage:
         try:
             self.wait.until(EC.visibility_of_element_located(locator))
             return True
-        except:
+        except Exception:
             return False
+
+    def wait_for_url(self, url_part):
+        self.wait.until(EC.url_contains(url_part))

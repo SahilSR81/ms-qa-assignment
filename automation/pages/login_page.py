@@ -18,3 +18,4 @@ class LoginPage(BasePage):
         self.type_text(self.USERNAME_INPUT, username)
         self.type_text(self.PASSWORD_INPUT, password)
         self.click(self.LOGIN_BUTTON)
+        self.wait_for_url("inventory.html")
