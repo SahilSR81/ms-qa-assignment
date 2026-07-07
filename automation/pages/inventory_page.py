@@ -12,9 +12,11 @@ class InventoryPage(BasePage):
         super().__init__(driver)
 
     def add_product_to_cart(self, product_id):
-        # sauce-labs-backpack -> add-to-cart-sauce-labs-backpack
         add_btn = (By.ID, f"add-to-cart-{product_id}")
         self.click(add_btn)
+        # Wait for the button to change to "Remove", confirming cart state updated
+        remove_btn = (By.ID, f"remove-{product_id}")
+        self.find_element(remove_btn)
 
     def get_cart_badge_count(self):
         if self.is_visible(self.CART_BADGE):
