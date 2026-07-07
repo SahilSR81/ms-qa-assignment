@@ -81,15 +81,25 @@ No tokens or IDs are hardcoded anywhere. The environment file declares all varia
 # Install Newman (one-time)
 npm install -g newman newman-reporter-htmlextra
 
-# Run the suite (from repo root)
+# Navigate to the directory
 cd api-testing/postman
+
+# Start the mock server in the background
+node mock-server.js &
+# Wait a moment for server to bind
+sleep 2
+
+# Run the suite
 newman run collection.json -e environment.json
 
-# With HTML report
+# (Optional) Run with HTML report output
 newman run collection.json \
   -e environment.json \
   --reporters cli,htmlextra \
   --reporter-htmlextra-export report.html
+
+# Terminate the background mock server when finished
+kill %1
 ```
 
 ## Why Newman over Postman CLI

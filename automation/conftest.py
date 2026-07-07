@@ -18,11 +18,14 @@ def setup(request):
             options.add_argument("--headless=new")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--disable-gpu")
         driver = webdriver.Chrome(options=options)
     elif browser_name == "firefox":
         options = FirefoxOptions()
         if headless:
             options.add_argument("-headless")
+        options.add_argument("--window-size=1920,1080")
         driver = webdriver.Firefox(options=options)
     else:
         raise ValueError(f"Browser {browser_name} is not supported.")
