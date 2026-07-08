@@ -2,8 +2,8 @@
 
 A complete QA engineering submission for the MSAI Online Event Registration Platform, covering strategy, test design, root cause analysis, API testing, and end-to-end automation.
 
-![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
-![Selenium](https://img.shields.io/badge/Selenium-4.44+-green.svg)
+![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)
+![Selenium](https://img.shields.io/badge/Selenium-4.44-green.svg)
 ![pytest](https://img.shields.io/badge/pytest-9.0+-yellow.svg)
 ![Automation CI](https://github.com/sahilsr81/ms-qa-assignment/actions/workflows/python-app.yml/badge.svg)
 ![API Tests CI](https://github.com/sahilsr81/ms-qa-assignment/actions/workflows/api-tests.yml/badge.svg)
