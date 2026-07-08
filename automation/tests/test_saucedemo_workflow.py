@@ -1,4 +1,3 @@
-from __future__ import annotations
 import pytest
 from pages.login_page import LoginPage
 from pages.inventory_page import InventoryPage
@@ -7,7 +6,7 @@ from pages.cart_page import CartPage
 @pytest.mark.usefixtures("setup")
 class TestSauceDemoWorkflow:
     @pytest.mark.smoke
-    def test_end_to_end_shopping_workflow(self) -> None:
+    def test_end_to_end_shopping_workflow(self):
         login_page = LoginPage(self.driver)
         inventory_page = InventoryPage(self.driver)
         cart_page = CartPage(self.driver)
@@ -41,6 +40,7 @@ class TestSauceDemoWorkflow:
         cart_page.remove_product("sauce-labs-bike-light")
 
         # 7. Verify cart badge updates to 1
+        # Re-using inventory_page method since the badge is in the global header
         inventory_page.wait_for_cart_badge_count(1)
         badge_count = inventory_page.get_cart_badge_count()
         assert badge_count == 1, f"Expected cart badge to show 1 after removal, but got {badge_count}"
@@ -66,7 +66,7 @@ class TestSauceDemoWorkflow:
         assert login_page.is_visible(login_page.LOGIN_BUTTON), "Expected login button to be visible after logout"
 
     @pytest.mark.regression
-    def test_negative_login_invalid_password(self) -> None:
+    def test_negative_login_invalid_password(self):
         login_page = LoginPage(self.driver)
         login_page.open()
         
@@ -78,14 +78,14 @@ class TestSauceDemoWorkflow:
         assert "do not match" in error_text, f"Expected error text to contain 'do not match', but got '{error_text}'"
 
     @pytest.mark.regression
-    def test_clear_cart(self) -> None:
+    def test_clear_cart(self):
         login_page = LoginPage(self.driver)
         inventory_page = InventoryPage(self.driver)
         cart_page = CartPage(self.driver)
 
         login_page.open()
         
-        # Reset local and session storage, and load blank page to ensure clean state
+        # Clear local storage and reset the page completely to avoid React form restoration issues
         self.driver.execute_script("window.localStorage.clear(); window.sessionStorage.clear();")
         self.driver.get("about:blank")
         login_page.open()

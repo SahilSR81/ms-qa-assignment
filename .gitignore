@@ -36,6 +36,3 @@ report.html
 *.egg-info/
 dist/
 build/
-
-# Debug scripts directory
-debug-scripts/
