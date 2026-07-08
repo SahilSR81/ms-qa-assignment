@@ -9,6 +9,43 @@ A complete QA engineering submission for the MSAI Online Event Registration Plat
 [![API Tests (Newman)](https://github.com/SahilSR81/ms-qa-assignment/actions/workflows/api-tests.yml/badge.svg)](https://github.com/SahilSR81/ms-qa-assignment/actions/workflows/api-tests.yml)
 ![License](https://img.shields.io/badge/License-MIT-purple.svg)
 
+---
+
+## Quick Start
+
+### 1. Run Selenium Tests
+```bash
+cd automation/
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+pytest
+```
+
+### 2. Run API Tests (Newman)
+```bash
+npm install -g newman
+cd api-testing/postman
+node mock-server.js &
+sleep 2
+newman run collection.json -e environment.json
+```
+
+---
+
+## What's Included
+
+The repository contains the following core components:
+
+* **QA Strategy**: A detailed risk-based strategy for launch day, specifying test types, prioritized features, and launch criteria.
+* **Test Case Design**: 15 structured test cases covering five event modules, with a 5-test critical path selection.
+* **Root Cause Analysis (RCA)**: Step-by-step diagnostic procedures for three production bug scenarios, including logs and systems to inspect.
+* **API Testing**: A comprehensive written approach covering validation logic and positive/negative test cases for six API endpoints.
+* **Automation Suite**: A Selenium POM framework written in Python with pytest, running in continuous integration across Chrome and Firefox.
+* **Postman Collection**: A runnable 21-request suite testing contract validation and data chaining against an local Node.js mock server.
+
+---
+
 ## Repository Structure
 
 | Part | Deliverable | Path |
@@ -17,8 +54,8 @@ A complete QA engineering submission for the MSAI Online Event Registration Plat
 | Part 2 — Test Case Design | 15 structured test cases across 5 modules with prioritization | [test-cases/README.md](test-cases/README.md) |
 | Part 3 — Root Cause Analysis | Investigation approach for 3 production scenarios | [rca/README.md](rca/README.md) |
 | Part 4 — API Testing Approach | Written approach for all 6 endpoints | [api-testing/api-testing-approach.md](api-testing/api-testing-approach.md) |
-| Part 5 — Automation (Selenium + pytest) | Page Object Model framework with CI | [automation/](automation/) |
-| Bonus — Postman Collection + Newman CI | 21-request API test suite with mock server | [api-testing/postman/](api-testing/postman/) |
+| Part 5 — Automation (Selenium + pytest) | Page Object Model framework with CI | [automation/README.md](automation/README.md) |
+| Bonus — Postman Collection + Newman CI | 21-request API test suite with mock server | [api-testing/postman/README.md](api-testing/postman/README.md) |
 
 ### Detailed Folder Structure
 
@@ -43,9 +80,9 @@ ms-qa-assignment/
 ├── automation/
 │   ├── pages/                   # Page Object classes
 │   │   ├── base_page.py         # Core element interactions & explicit waits
-│   │   ├── cart_page.py         # Cart interactions
-│   │   ├── inventory_page.py    # Products listing interactions
-│   │   └── login_page.py        # Login interactions
+│   │   ├── cart_page.py         # Cart page actions
+│   │   ├── inventory_page.py    # Products listing page actions
+│   │   └── login_page.py        # Login page actions
 │   ├── tests/                   # Test files
 │   │   └── test_saucedemo_workflow.py
 │   ├── conftest.py              # Pytest fixtures and browser setup
@@ -54,6 +91,8 @@ ms-qa-assignment/
 └── README.md                    # This file
 ```
 
+---
+
 ## Tech Stack
 
 | Technology | Purpose |
@@ -61,70 +100,53 @@ ms-qa-assignment/
 | Python | Core programming language |
 | Selenium WebDriver | Browser automation and interaction |
 | pytest | Test runner and assertion framework |
-| Selenium Manager (built-in) | Automatic management of browser drivers — no webdriver-manager dependency |
-| Postman + Newman | API test design (GUI) and CI-ready CLI execution |
-| Node.js | Lightweight mock server for API tests |
-| GitHub Actions | Continuous Integration — two pipelines (automation + API tests) |
+| Selenium Manager (built-in) | Automatic browser driver management |
+| Postman + Newman | API test design and CLI execution |
+| Node.js | Local mock server execution |
+| GitHub Actions | Continuous Integration pipelines |
 
-## Setup Instructions
-
-### Automation (Selenium + pytest)
-
-Please see the dedicated [automation/README.md](automation/README.md) for full setup and execution instructions.
-
-### API Testing (Postman + Newman)
-
-```bash
-# Install Newman (one-time)
-npm install -g newman newman-reporter-htmlextra
-
-# Navigate to the postman directory
-cd api-testing/postman
-
-# Start mock server + run tests
-node mock-server.js &
-sleep 2
-newman run collection.json -e environment.json
-```
-
-## How to Run Tests
-
-### API Tests
-
-```bash
-cd api-testing/postman/
-newman run collection.json -e environment.json --reporters cli,htmlextra --reporter-htmlextra-export report.html
-```
+---
 
 ## CI Pipelines
 
 Two independent GitHub Actions workflows run on push/PR to `main`:
 
-1. **`python-app.yml`** — Selenium automation: installs Chrome, installs pinned Python dependencies, runs `pytest` in headless mode.
-2. **`api-tests.yml`** — API tests: installs Node.js + Newman, starts the mock server, runs the full 21-request Postman collection, uploads the HTML report as a build artifact.
+1. **`python-app.yml`** — Selenium automation: installs Chrome/Firefox, installs dependencies, and runs `pytest` in headless mode.
+2. **`api-tests.yml`** — API tests: installs Newman, starts the mock server, runs the collection, and uploads the HTML report as an artifact.
+
+---
 
 ## Assumptions
 
-- **Payment is simulated**: No real payment gateway or money movement. Testing validates flow correctness, not PCI compliance.
-- **Endpoints are undocumented** (except `POST /api/login`): API contracts for the other 5 endpoints were inferred from reasonable assumptions, documented in the Postman collection description.
-- **Single deployment environment**: No blue-green or canary infrastructure assumed.
-- **Web-only platform**: No native mobile app support at launch.
-- **Selenium Manager**: The project uses Selenium 4.44's built-in driver management — no `webdriver-manager` package dependency.
-- **Sole QA engineer**: All testing scope is bounded by one person's throughput.
+* **Payment is simulated**: No real payment gateway integration is tested.
+* **Endpoints are undocumented**: API contracts for endpoints (except login) were inferred from application behavior.
+* **Single deployment environment**: No canary or blue-green infrastructure assumed.
+* **Web-only platform**: Native mobile app support is out of scope for launch.
+* **Sole QA engineer**: Bounded by single-engineer throughput.
+
+---
 
 ## AI Tools Used
 
-- **DeepMind Agentic Assistant (Antigravity)**: Used as a pair-programming partner throughout the assignment.
-  - **Debugging Headless CI Flakiness**: The AI helped diagnose intermittent `TimeoutException` errors.
-  - **Framework Design (Modified AI Suggestion)**: Early on, the AI suggested using `time.sleep()` after clicking buttons to wait for page transitions (a common pattern in generic Selenium tutorials). I explicitly rejected this approach because hardcoded sleeps either waste execution time or cause flakiness depending on CI runner speed. I directed the AI to replace all static sleeps with explicit `WebDriverWait` polling (e.g., `wait_for_staleness`), which is the robust pattern that ships in the final `BasePage` class today. <!-- SAHIL: Verify this accurately reflects your process before submission -->
-  - **Documentation**: Aided in generating structural templates for the QA strategy, Test Cases, and RCA documentation.
-  - **Validation**: All AI-suggested code was manually reviewed and verified.
+| Tool | Models | Usage |
+|------|--------|-------|
+| [opencode](https://opencode.ai) / Antigravity | big-pickle (online) | Code generation, debugging, architecture suggestions, file operations |
+| [ollama](https://ollama.ai) (offline/local) | `batiai/gemma4-12b:q3`, `qwen3.5:latest` | Local code review, test case generation, documentation drafting |
+
+### AI Workflow
+
+* **Orchestration**: The `opencode` terminal-based agent orchestrated the directory management, file creation, and execution of test commands.
+* **Online Assistance**: The `big-pickle` model handled online queries and verified standard Selenium syntax patterns.
+* **Local Refinement**: Local `Ollama` models were used for code reviews, drafting initial documentation outlines, and validating test coverages to keep code development secure and isolated.
+* **Manual Verification**: All outputs, suggestions, and scripts generated by AI tools were manually reviewed, revised, and validated by running the test suite locally.
+
+---
 
 ## Troubleshooting
 
-1. **Automation Framework Issues:**
-   * Please refer to the troubleshooting section in [automation/README.md](automation/README.md).
+### 1. Automation Framework Issues
+Please refer to the troubleshooting section in [automation/README.md](automation/README.md).
 
-2. **Newman Mock Server Connection Refused:**
-   * **Issue:** `connect ECONNREFUSED 127.0.0.1:3000` when running Newman.
-   * **Solution:** Ensure the mock server (`node mock-server.js`) is running before executing Newman. The server binds to port 3000 by default.
+### 2. Newman Mock Server Connection Refused
+* **Issue:** `connect ECONNREFUSED 127.0.0.1:3000` when running Newman.
+* **Solution:** Verify that the mock server is running before executing Newman (`node mock-server.js`).
