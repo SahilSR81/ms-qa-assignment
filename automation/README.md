@@ -56,7 +56,7 @@ Zero `time.sleep()` in the framework. Instead, `BasePage` uses explicit `WebDriv
 2. **CI runner resource contention**: GitHub Actions runners share CPU/memory. Pages can load much slower than on a local dev machine.
    * **Check**: Look at CI run duration for the failing step. If it took unusually long, increase `WebDriverWait` timeout or check runner resource usage.
 
-3. **React re-render race (swallowed clicks)**: WebDriver might click a button right when React is destroying and replacing the DOM node. The click lands on the old node and the event never fires. Headless runs execute JS faster, changing the timing and surfacing this race.
+3. **DOM re-render race (swallowed clicks)**: WebDriver might click a button right when the page is destroying and replacing the DOM node. The click lands on the old node and the event never fires. Headless runs execute JS faster, changing the timing and surfacing this race.
    * **Check**: If the failure screenshot shows the test is still on the *previous* page despite `.click()` succeeding in logs, a swallowed click is the cause. I handle this with a custom `click_until_url` retry helper.
 
 4. **Browser/driver version drift**: CI installs the latest Chrome. If a new Chrome version changes behavior or breaks APIs before Selenium Manager catches up, tests can randomly fail.

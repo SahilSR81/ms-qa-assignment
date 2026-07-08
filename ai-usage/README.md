@@ -48,13 +48,13 @@ def logout(self):
 
 ### Why I Rejected It
 
-It worked locally but failed intermittently in CI with `ElementClickInterceptedException`. The problem was a React re-render race — the sidebar menu collapses (DOM node gets replaced) between WebDriver finding the element and clicking it. The AI assumed a static DOM, which doesn't work for React SPAs.
+It worked locally but failed intermittently in CI with `ElementClickInterceptedException`. The problem was a DOM re-render race — the sidebar menu collapses (DOM node gets replaced) between WebDriver finding the element and clicking it. The AI assumed a static DOM, which doesn't hold for client-side rendered pages.
 
 ### How I Fixed It
 
 1. Tried `.click()` with longer `WebDriverWait` — still flaky.
 2. Tried try/except retry loop — better but not reliable.
-3. Final solution: used JavaScript `click()` via `executeScript` inside a retry loop that checks for page state change (URL change or element visibility). This bypasses React's DOM replacement entirely.
+3. Final solution: used JavaScript `click()` via `executeScript` inside a retry loop that checks for page state change (URL change or element visibility). This bypasses the DOM replacement issue entirely.
 
 ```python
 def js_click(self, by, value, timeout=10):
@@ -70,7 +70,7 @@ def logout(self):
 
 ### What I Learned
 
-The AI's suggestion was fine for a static page but didn't account for React's async DOM behavior. I generalized the fix into reusable `js_click()` and retry methods in `BasePage` so all page objects could use it. Validated against 10+ CI runs with zero flakiness.
+The AI's suggestion was fine for a static page but didn't account for async DOM updates in client-side rendered pages. I generalized the fix into reusable `js_click()` and retry methods in `BasePage` so all page objects could use it. Validated against 10+ CI runs with zero flakiness.
 
 ---
 
