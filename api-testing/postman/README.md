@@ -115,7 +115,7 @@ Newman is the open-source, standalone CLI runner maintained by the Postman team.
 The GitHub Actions workflow (`.github/workflows/api-tests.yml`) runs on every push and PR to `main`:
 
 1. Checks out the repo
-2. Sets up Node.js 20
+2. Sets up Node.js (latest)
 3. Installs Newman + HTML reporter globally
 4. Runs the collection from `api-testing/postman/`
 5. Uploads `report.html` as a build artifact (even on failure, via `if: always()`)
