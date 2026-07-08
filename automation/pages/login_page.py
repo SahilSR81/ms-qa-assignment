@@ -17,5 +17,4 @@ class LoginPage(BasePage):
     def login(self, username, password):
         self.type_text(self.USERNAME_INPUT, username)
         self.type_text(self.PASSWORD_INPUT, password)
-        self.click(self.LOGIN_BUTTON)
-        self.wait_for_url("inventory.html")
+        self.click_until_url(self.LOGIN_BUTTON, "inventory.html")

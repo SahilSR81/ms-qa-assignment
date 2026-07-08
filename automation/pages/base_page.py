@@ -67,3 +67,20 @@ class BasePage:
 
     def wait_for_invisibility(self, locator):
         self.wait.until(EC.invisibility_of_element_located(locator))
+
+    def click_until_url(self, click_locator, url_part, max_retries=3, use_js=False):
+        for i in range(max_retries):
+            try:
+                if use_js:
+                    self.js_click(click_locator)
+                else:
+                    self.click(click_locator)
+                WebDriverWait(self.driver, 2).until(EC.url_contains(url_part))
+                return
+            except Exception:
+                if i == max_retries - 1:
+                    if use_js:
+                        self.js_click(click_locator)
+                    else:
+                        self.click(click_locator)
+                    self.wait_for_url(url_part)

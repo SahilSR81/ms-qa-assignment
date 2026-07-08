@@ -22,8 +22,7 @@ class InventoryPage(BasePage):
         return 0
 
     def go_to_cart(self):
-        self.js_click(self.CART_LINK)
-        self.wait_for_url("cart.html")
+        self.click_until_url(self.CART_LINK, "cart.html", use_js=True)
 
     def wait_for_cart_badge_count(self, expected_count):
         if expected_count == 0:

@@ -28,6 +28,5 @@ class CartPage(BasePage):
         self.wait_for_staleness(element)
 
     def continue_shopping(self):
-        self.js_click(self.CONTINUE_SHOPPING_BTN)
-        self.wait_for_url("inventory.html")
+        self.click_until_url(self.CONTINUE_SHOPPING_BTN, "inventory.html", use_js=True)
 
