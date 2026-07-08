@@ -2,6 +2,10 @@
 
 ## Test Cases
 
+## Test Design Strategy
+
+UI flows were used for Registration and Login because authentication is a foundational user entry point where UI wireframes and requirements were clear. However, for post-login flows like Event Registration, Payment, and Confirmation Emails, automated API-based tests were selected due to the lack of UI wireframes for these specific features. This hybrid approach ensures maximum coverage across layers.
+
 ---
 
 ### Module: User Registration
@@ -214,3 +218,25 @@
 | 5 | **TC-CE-01** | Confirmation email is the user's receipt and proof of registration. Without it, users will flood support asking "did my registration go through?" — even if everything worked correctly. It's the cheapest way to reduce Day 1 support load. |
 
 **Why these 5 over others:** These trace the complete happy-path revenue journey (login → register → pay → confirm) plus the single most dangerous failure mode (payment timeout ambiguity). The negative and duplicate-prevention tests (TC-UR-02, TC-ER-02, TC-PM-02) are important but are not launch-blocking — a duplicate registration is a data quality issue, not a "platform is broken" issue. The capacity edge case (TC-ER-03) is critical but is a lower-probability event on Day 1 when registration counts are low.
+
+---
+
+## Test Coverage Traceability
+
+| Test ID | Module | Scenario Summary | Execution Method |
+|---------|--------|------------------|------------------|
+| TC-UR-01 | User Registration | Successful registration | Automated UI |
+| TC-UR-02 | User Registration | Duplicate email rejection | Automated UI |
+| TC-UR-03 | User Registration | Whitespace password rejection | Automated UI |
+| TC-LG-01 | Login | Successful login (returns JWT) | Automated UI |
+| TC-LG-02 | Login | Incorrect password rejection | Automated UI |
+| TC-LG-03 | Login | Session expiry during checkout | Automated API |
+| TC-ER-01 | Event Registration | Successful registration | Automated API |
+| TC-ER-02 | Event Registration | Duplicate registration rejection | Automated API |
+| TC-ER-03 | Event Registration | Registration at zero capacity | Automated API |
+| TC-PM-01 | Payment | Successful payment | Automated API |
+| TC-PM-02 | Payment | Negative amount rejection | Automated API |
+| TC-PM-03 | Payment | Payment network timeout | Manual / Exploratory |
+| TC-CE-01 | Confirmation Email | Successful email delivery | Automated API |
+| TC-CE-02 | Confirmation Email | No duplicate emails | Automated API |
+| TC-CE-03 | Confirmation Email | Email service outage retry | Automated API |
