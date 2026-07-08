@@ -1,6 +1,6 @@
 # Root Cause Analysis — Online Event Registration Platform
 
-*See the [Sample Bug Report (Jira-style)](sample-bug-report.md) for Scenario 1.*
+*See the [Sample Bug Report](sample-bug-report.md) for Scenario 1.*
 
 ## Scenario 1: "My payment was successful, but my event registration was never created."
 
