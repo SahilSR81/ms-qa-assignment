@@ -57,3 +57,6 @@ class BasePage:
                     else:
                         self.click(click_locator)
                     self.wait.until(EC.presence_of_element_located(target_locator))
+
+    def wait_for_staleness(self, element):
+        self.wait.until(EC.staleness_of(element))

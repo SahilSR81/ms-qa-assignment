@@ -17,7 +17,9 @@ class CartPage(BasePage):
     def remove_product(self, product_id):
         # e.g., remove-sauce-labs-backpack
         remove_btn = (By.ID, f"remove-{product_id}")
-        self.click(remove_btn)
+        element = self.find_element(remove_btn)
+        self.js_click(remove_btn)
+        self.wait_for_staleness(element)
 
     def continue_shopping(self):
         self.click(self.CONTINUE_SHOPPING_BTN)
