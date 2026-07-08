@@ -1,7 +1,12 @@
 const http = require('http');
 
-let registeredUsers = new Set();
+let registeredUsers = {};
 let eventRegistrations = new Set();
+let eventRegistrationCounts = {};
+const EVENT_CAPACITY = 100;
+
+// Pre-seed a user for the login happy path test
+registeredUsers["user@example.com"] = { name: "Existing User", password: "password123" };
 
 const server = http.createServer((req, res) => {
     res.setHeader('Content-Type', 'application/json');
@@ -39,17 +44,17 @@ const server = http.createServer((req, res) => {
 
         // --- POST /api/register ---
         if (req.method === 'POST' && req.url === '/api/register') {
-            if (!parsedBody.email || !parsedBody.password) {
+            if (!parsedBody.name || !parsedBody.email || !parsedBody.password) {
                 res.writeHead(400);
-                res.end(JSON.stringify({ error: "Missing required fields: email and password are required" }));
+                res.end(JSON.stringify({ error: "Missing required fields: name, email, and password are required" }));
                 return;
             }
-            if (registeredUsers.has(parsedBody.email)) {
+            if (parsedBody.email in registeredUsers) {
                 res.writeHead(409);
                 res.end(JSON.stringify({ error: "Email already registered" }));
                 return;
             }
-            registeredUsers.add(parsedBody.email);
+            registeredUsers[parsedBody.email] = { name: parsedBody.name, password: parsedBody.password };
             res.writeHead(201);
             res.end(JSON.stringify({ message: "User registered successfully", userId: "user_12345" }));
             return;
@@ -57,12 +62,13 @@ const server = http.createServer((req, res) => {
 
         // --- POST /api/login ---
         if (req.method === 'POST' && req.url === '/api/login') {
-            if (!parsedBody.email) {
+            if (!parsedBody.email || !parsedBody.password) {
                 res.writeHead(400);
-                res.end(JSON.stringify({ error: "Email is required" }));
+                res.end(JSON.stringify({ error: "Email and password are required" }));
                 return;
             }
-            if (parsedBody.password === 'wrong_password') {
+            const user = registeredUsers[parsedBody.email];
+            if (!user || user.password !== parsedBody.password) {
                 res.writeHead(401);
                 res.end(JSON.stringify({ error: "Invalid credentials" }));
                 return;
@@ -105,7 +111,13 @@ const server = http.createServer((req, res) => {
                 res.end(JSON.stringify({ error: "Already registered for this event" }));
                 return;
             }
+            if ((eventRegistrationCounts[parsedBody.eventId] || 0) >= EVENT_CAPACITY) {
+                res.writeHead(422);
+                res.end(JSON.stringify({ error: "Event is full" }));
+                return;
+            }
             eventRegistrations.add(parsedBody.eventId);
+            eventRegistrationCounts[parsedBody.eventId] = (eventRegistrationCounts[parsedBody.eventId] || 0) + 1;
             res.writeHead(200);
             res.end(JSON.stringify({ message: "Successfully registered for event", registrationId: "reg_xyz789" }));
             return;
