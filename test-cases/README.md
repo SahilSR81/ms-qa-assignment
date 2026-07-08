@@ -152,6 +152,28 @@ For User Registration and Login I used UI-based test cases since the wireframes 
 | **Expected Result** | If payment processed server-side: registration shows "paid", retry returns idempotent success (no double charge). If not processed: shows "pending", user can retry safely. Must never leave user in "charged but unpaid" limbo. |
 | **Priority** | P1 |
 
+**TC-PM-04**
+
+| Field | Value |
+|-------|-------|
+| **Test ID** | TC-PM-04 |
+| **Test Scenario** | Same payment submitted twice for the same registration (idempotency check) |
+| **Preconditions** | User logged in with a valid registrationId. First payment already succeeded. |
+| **Test Steps** | 1. Call `POST /api/payment` with same `registrationId`, `amount`, `currency`, `paymentMethod` as the first successful payment. |
+| **Expected Result** | Returns 200 OK with the same `transactionId` as the first payment (not a new one). Registration status stays "paid". User is not charged twice. |
+| **Priority** | P1 |
+
+**TC-PM-05**
+
+| Field | Value |
+|-------|-------|
+| **Test ID** | TC-PM-05 |
+| **Test Scenario** | Payment attempted with a registrationId that doesn't exist |
+| **Preconditions** | User logged in. No registration exists for the given ID. |
+| **Test Steps** | 1. Call `POST /api/payment` with `{"registrationId": "reg_nonexistent", "amount": 49.99, "currency": "USD", "paymentMethod": "credit_card"}`. |
+| **Expected Result** | Returns 404 Not Found with error saying registration doesn't exist. No transaction created. System handles it gracefully (no stack trace or 500). |
+| **Priority** | P1 |
+
 ---
 
 ### Module: Confirmation Email
@@ -193,12 +215,12 @@ For User Registration and Login I used UI-based test cases since the wireframes 
 
 ## Summary
 
-**Total: 15 test cases** (TC-UR-01 through TC-CE-03)
+**Total: 17 test cases** (TC-UR-01 through TC-CE-03)
 
 - User Registration: 3
 - Login: 3
 - Event Registration: 3
-- Payment: 3
+- Payment: 5 (highest risk area per QA strategy)
 - Confirmation Email: 3
 
 ---
@@ -233,6 +255,8 @@ For User Registration and Login I used UI-based test cases since the wireframes 
 | TC-PM-01 | Payment | Successful payment | API |
 | TC-PM-02 | Payment | Negative amount rejection | API |
 | TC-PM-03 | Payment | Payment network timeout | Manual |
+| TC-PM-04 | Payment | Payment idempotency (duplicate submission) | API |
+| TC-PM-05 | Payment | Non-existent registrationId | API |
 | TC-CE-01 | Confirmation Email | Successful email delivery | API |
 | TC-CE-02 | Confirmation Email | No duplicate emails | API |
 | TC-CE-03 | Confirmation Email | Email service outage retry | API |

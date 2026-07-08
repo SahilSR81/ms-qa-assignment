@@ -33,5 +33,6 @@ class InventoryPage(BasePage):
             self.wait_for_text_in_element(self.CART_BADGE, str(expected_count))
 
     def logout(self) -> None:
-        self.click(self.BURGER_MENU_BTN)
+        self.js_click(self.BURGER_MENU_BTN)
         self.js_click(self.LOGOUT_LINK)
+        self.wait_for_url("saucedemo.com")

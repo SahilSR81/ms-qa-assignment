@@ -36,7 +36,7 @@ newman run collection.json -e environment.json
 ## What's Included
 
 - **QA Strategy** — Risk-based strategy for launch day. Covers test types, feature priorities, and release criteria.
-- **Test Cases** — 15 test cases across 5 modules with a 5-test critical path selection.
+- **Test Cases** — 17 test cases across 5 modules with a 5-test critical path selection.
 - **Root Cause Analysis** — How I'd investigate 3 production bug scenarios step by step.
 - **API Testing** — Written approach for all 6 endpoints with positive, negative, and edge cases.
 - **Automation** — Selenium POM framework in Python using pytest, runs in CI on Chrome and Firefox.
@@ -49,7 +49,7 @@ newman run collection.json -e environment.json
 | Part | Deliverable | Path |
 |------|-------------|------|
 | Part 1 — QA Strategy | Risk-based test strategy for first production launch | [qa-strategy/README.md](qa-strategy/README.md) |
-| Part 2 — Test Case Design | 15 test cases across 5 modules with prioritization | [test-cases/README.md](test-cases/README.md) |
+| Part 2 — Test Case Design | 17 test cases across 5 modules with prioritization | [test-cases/README.md](test-cases/README.md) |
 | Part 3 — Root Cause Analysis | How I'd investigate 3 production scenarios | [rca/README.md](rca/README.md) |
 | Part 4 — API Testing Approach | Written approach for all 6 endpoints | [api-testing/api-testing-approach.md](api-testing/api-testing-approach.md) |
 | Part 5 — Automation (Selenium + pytest) | Page Object Model framework with CI | [automation/README.md](automation/README.md) |
