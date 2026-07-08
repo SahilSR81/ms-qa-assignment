@@ -4,6 +4,7 @@ from .base_page import BasePage
 class CartPage(BasePage):
     # Locators
     CART_ITEM = (By.CLASS_NAME, "cart_item")
+    INVENTORY_ITEM_NAME = (By.CLASS_NAME, "inventory_item_name")
     CONTINUE_SHOPPING_BTN = (By.ID, "continue-shopping")
 
     def __init__(self, driver):
@@ -13,6 +14,12 @@ class CartPage(BasePage):
         if self.is_visible(self.CART_ITEM):
             return len(self.find_elements(self.CART_ITEM))
         return 0
+
+    def get_cart_item_names(self):
+        if not self.is_visible(self.CART_ITEM):
+            return []
+        elements = self.find_elements(self.INVENTORY_ITEM_NAME)
+        return [elem.text for elem in elements]
 
     def wait_for_cart_items_count(self, expected_count):
         if expected_count == 0:

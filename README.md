@@ -70,16 +70,7 @@ ms-qa-assignment/
 
 ### Automation (Selenium + pytest)
 
-```bash
-cd automation/
-
-# Create and activate a virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
+Please see the dedicated [automation/README.md](automation/README.md) for full setup and execution instructions.
 
 ### API Testing (Postman + Newman)
 
@@ -98,35 +89,12 @@ newman run collection.json -e environment.json
 
 ## How to Run Tests
 
-### Automation
-
-```bash
-cd automation/
-
-# Run tests in headless mode (default)
-pytest
-
-# Run tests with visible browser
-pytest --headless=False
-```
-
 ### API Tests
 
 ```bash
 cd api-testing/postman/
 newman run collection.json -e environment.json --reporters cli,htmlextra --reporter-htmlextra-export report.html
 ```
-
-## Design Decisions
-
-### Strict Page Object Model (POM)
-The framework strictly adheres to the Page Object Model design pattern. All locators and WebDriver interactions are encapsulated within the `pages/` directory. Test files (`tests/`) contain zero locators (`By.ID`, `By.CLASS_NAME`, etc.). This separation of concerns ensures that the test logic remains clean, readable, and focused on business flows, while UI changes only require updates in a single page class.
-
-### No-Sleep Policy (Explicit Waits Only)
-The framework enforces a strict zero `time.sleep()` policy. Hardcoded sleeps lead to flaky tests and unnecessarily increase execution time. Instead, the `BasePage` class implements robust `WebDriverWait` strategies combined with Expected Conditions (e.g., `visibility_of_element_located`, `element_to_be_clickable`). The framework actively polls the DOM and proceeds exactly when the element is ready, ensuring fast and reliable test execution.
-
-### Pinned Dependencies
-`requirements.txt` uses exact version pins (`==`) for pytest and selenium. This prevents CI/local divergence caused by upstream releases — a common source of "works on my machine" failures.
 
 ## CI Pipelines
 
@@ -147,25 +115,16 @@ Two independent GitHub Actions workflows run on push/PR to `main`:
 ## AI Tools Used
 
 - **DeepMind Agentic Assistant (Antigravity)**: Used as a pair-programming partner throughout the assignment.
-  - **Debugging Headless CI Flakiness**: The AI helped diagnose intermittent `TimeoutException` and `StaleElementReferenceException` errors occurring only in the GitHub Actions headless environment. It identified that DOM re-renders and React state changes were swallowing standard Selenium clicks.
-  - **Framework Design**: Assisted in designing the resilient `click_until_url` helper in the `BasePage` class, and migrating brittle `time.sleep()` calls to dynamic `WebDriverWait` polling methods (e.g., `wait_for_cart_badge_count`, `wait_for_staleness`).
+  - **Debugging Headless CI Flakiness**: The AI helped diagnose intermittent `TimeoutException` errors.
+  - **Framework Design (Modified AI Suggestion)**: Early on, the AI suggested using `time.sleep()` after clicking buttons to wait for page transitions (a common pattern in generic Selenium tutorials). I explicitly rejected this approach because hardcoded sleeps either waste execution time or cause flakiness depending on CI runner speed. I directed the AI to replace all static sleeps with explicit `WebDriverWait` polling (e.g., `wait_for_staleness`), which is the robust pattern that ships in the final `BasePage` class today. <!-- SAHIL: Verify this accurately reflects your process before submission -->
   - **Documentation**: Aided in generating structural templates for the QA strategy, Test Cases, and RCA documentation.
-  - **Validation**: All AI-suggested code was manually reviewed, executed locally both headed and headless, and verified against the CI pipeline to ensure zero flakiness.
+  - **Validation**: All AI-suggested code was manually reviewed and verified.
 
 ## Troubleshooting
 
-1. **Chromedriver Version Mismatch:**
-   * **Issue:** `SessionNotCreatedException: This version of ChromeDriver only supports Chrome version X`.
-   * **Solution:** Selenium 4.10+ includes Selenium Manager, which automatically downloads the correct ChromeDriver for your installed Chrome version. Ensure your Selenium version is `>=4.10` (this project pins `4.44.0`). If issues persist, verify Chrome is up-to-date: `google-chrome --version`.
+1. **Automation Framework Issues:**
+   * Please refer to the troubleshooting section in [automation/README.md](automation/README.md).
 
-2. **Headless CI Failures:**
-   * **Issue:** Tests pass locally but fail in GitHub Actions with element-not-found or timeout exceptions.
-   * **Solution:** Headless browsers often run with a smaller default window size. The `conftest.py` already sets `--window-size=1920,1080` and calls `driver.maximize_window()`. If still failing, check the CI logs for screenshot artifacts.
-
-3. **Stale Element Reference Exception:**
-   * **Issue:** `StaleElementReferenceException: stale element reference: element is not attached to the page document`.
-   * **Solution:** The `BasePage` methods re-locate elements dynamically using explicit waits on every action to prevent this. If a new page object method encounters this, ensure it uses `self.wait.until(EC.*)` rather than storing element references.
-
-4. **Newman Mock Server Connection Refused:**
+2. **Newman Mock Server Connection Refused:**
    * **Issue:** `connect ECONNREFUSED 127.0.0.1:3000` when running Newman.
    * **Solution:** Ensure the mock server (`node mock-server.js`) is running before executing Newman. The server binds to port 3000 by default.

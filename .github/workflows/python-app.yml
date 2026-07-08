@@ -17,6 +17,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
+      fail-fast: false
 
     steps:
     - uses: actions/checkout@v6
@@ -27,7 +31,12 @@ jobs:
         python-version: "3.12"
         
     - name: Install Chrome
+      if: matrix.browser == 'chrome'
       uses: browser-actions/setup-chrome@v2
+      
+    - name: Install Firefox
+      if: matrix.browser == 'firefox'
+      uses: browser-actions/setup-firefox@v1
       
     - name: Install dependencies
       working-directory: ./automation
@@ -38,11 +47,18 @@ jobs:
     - name: Test with pytest
       working-directory: ./automation
       run: |
-        pytest
+        pytest --browser_name=${{ matrix.browser }} --alluredir=allure-results
 
     - name: Upload screenshots on failure
       uses: actions/upload-artifact@v6
       if: failure()
       with:
-        name: failure-screenshots
+        name: failure-screenshots-${{ matrix.browser }}
         path: automation/screenshots/
+
+    - name: Upload Allure results
+      uses: actions/upload-artifact@v6
+      if: always()
+      with:
+        name: allure-results-${{ matrix.browser }}
+        path: automation/allure-results/
