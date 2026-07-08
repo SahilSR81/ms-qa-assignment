@@ -24,9 +24,10 @@ class InventoryPage(BasePage):
         return 0
 
     def go_to_cart(self):
-        self.js_click(self.CART_LINK)
+        self.click(self.CART_LINK)
         self.wait_for_url("cart.html")
 
     def logout(self):
         self.click(self.BURGER_MENU_BTN)
+        # Sidebar slide-in animation intercepts pointer events until CSS transition completes; JS click bypasses interception
         self.js_click(self.LOGOUT_LINK)

@@ -26,8 +26,8 @@ Thumbs.db
 # Newman reports
 report.html
 
-# Debug scripts
-test_debug*.py
+# Debug scripts — matches any .py file containing "debug" anywhere in the filename
+*debug*.py
 
 # Selenium screenshots
 *.png
