@@ -1,32 +1,32 @@
 # MSAI — API Test Suite (Postman + Newman)
 
-A production-grade Postman collection for testing the MSAI event management REST API, designed to run locally or in CI with zero external account dependencies.
+Postman collection for testing the MSAI event management REST API. Designed to run locally or in CI with no external accounts needed.
 
 ## What's Covered
 
-| Endpoint | Requests | Coverage |
-|----------|----------|----------|
+| Endpoint | Requests | What's Tested |
+|----------|----------|---------------|
 | `POST /api/register` | 3 | Happy path, missing field, duplicate email |
 | `POST /api/login` | 3 | Happy path (token capture), invalid credentials, missing field |
 | `GET /api/events` | 3 | Happy path (event ID capture), missing token, malformed token |
-| `POST /api/events/register` | 4 | Happy path (registration ID capture), missing eventId, missing token, duplicate registration |
+| `POST /api/events/register` | 4 | Happy path (registration ID capture), missing eventId, missing token, duplicate |
 | `POST /api/payment` | 5 | Happy path, missing fields, missing token, negative amount, zero amount |
 | `GET /api/registrations` | 3 | Happy path, missing token, malformed token |
 
-**Total: 21 requests across 6 endpoints**, each with specific `pm.test()` assertions on status code, response body fields, field types, and response time.
+**Total: 21 requests across 6 endpoints**, each with `pm.test()` assertions on status code, response body fields, field types, and response time.
 
-## Assumptions (Undocumented Endpoints)
+## Assumptions (for Undocumented Endpoints)
 
-Only `POST /api/login` had a provided contract. The following assumptions were made for all other endpoints and are documented in the collection description:
+Only `POST /api/login` had a provided contract. I inferred the rest:
 
 ### POST /api/register
 - **Request:** `{ "name": string, "email": string, "password": string }`
 - **201:** `{ "message": string, "userId": string }`
-- **400:** `{ "error": string }` — missing or invalid fields
+- **400:** `{ "error": string }` — missing/invalid fields
 - **409:** `{ "error": string }` — duplicate email
 
 ### GET /api/events
-- **Auth:** Bearer token required in Authorization header
+- **Auth:** Bearer token in Authorization header
 - **200:** `{ "events": [{ "id": string, "title": string, "description": string, "date": ISO8601, "location": string, "capacity": number, "registered": number }] }`
 - **401:** `{ "error": string }`
 
@@ -48,76 +48,74 @@ Only `POST /api/login` had a provided contract. The following assumptions were m
 - **200:** `{ "registrations": [{ "registrationId": string, "eventId": string, "eventTitle": string, "registeredAt": ISO8601, "paymentStatus": string }] }`
 - **401:** `{ "error": string }`
 
-## Token Chaining Approach
+## Token Chaining
 
-The collection is designed to run sequentially. The data flow is:
+The collection runs in order. Data flows like this:
 
 ```
-POST /api/login (happy path)
-  └─► captures `token` → pm.environment.set("token", ...)
-       └─► used as `Bearer {{token}}` in all authenticated requests
+POST /api/login (happy)
+  └─► saves `token` → pm.environment.set("token", ...)
+       └─► used as Bearer {{token}} in all auth'd requests
 
-GET /api/events (happy path)
-  └─► captures `event_id` → pm.environment.set("event_id", ...)
+GET /api/events (happy)
+  └─► saves `event_id` → pm.environment.set("event_id", ...)
        └─► used in POST /api/events/register body
 
-POST /api/events/register (happy path)
-  └─► captures `registration_id` → pm.environment.set("registration_id", ...)
+POST /api/events/register (happy)
+  └─► saves `registration_id` → pm.environment.set("registration_id", ...)
        └─► used in POST /api/payment body
 ```
 
-No tokens or IDs are hardcoded anywhere. The environment file declares all variables with empty initial values (except `base_url` and `register_email`), and test scripts populate them at runtime.
+No tokens or IDs are hardcoded. The environment file declares all variables empty (except `base_url` and `register_email`), and test scripts fill them at runtime.
 
-## How to Import & Run in Postman GUI
+## How to Run in Postman GUI
 
-1. Open Postman → **Import** → drag in both `collection.json` and `environment.json`
-2. Select the **"MSAI - API Testing"** environment from the top-right dropdown
-3. Update `base_url` in the environment if your server isn't at `http://localhost:3000`
-4. Click **Runner** → select the collection → ensure the environment is selected → **Run**
+1. Open Postman → **Import** → drag in `collection.json` and `environment.json`
+2. Select the **"MSAI - API Testing"** environment from the top-right
+3. Update `base_url` if your server isn't at `http://localhost:3000`
+4. Click **Runner** → select collection → select environment → **Run**
 
-## How to Run Locally via Newman
+## How to Run via Newman
 
 ```bash
 # Install Newman (one-time)
 npm install -g newman newman-reporter-htmlextra
 
-# Navigate to the directory
 cd api-testing/postman
 
-# Start the mock server in the background
+# Start mock server
 node mock-server.js &
-# Wait a moment for server to bind
 sleep 2
 
 # Run the suite
 newman run collection.json -e environment.json
 
-# (Optional) Run with HTML report output
+# With HTML report
 newman run collection.json \
   -e environment.json \
   --reporters cli,htmlextra \
   --reporter-htmlextra-export report.html
 
-# Terminate the background mock server when finished
+# Stop the mock server
 kill %1
 ```
 
-## Why Newman over Postman CLI
+## Why Newman Instead of Postman CLI
 
-This is a deliberate design choice, not an oversight:
+I chose Newman over `postman login` / `postman collection run` because:
 
-> **A reviewer cloning this repo must be able to run the full test suite with zero external account setup.** Newman requires only `npm install -g newman` and a single command. The Postman CLI (`postman login`, `postman collection run`) requires a Postman account, an API key, and cloud-synced collections — all of which create unnecessary friction for a hiring reviewer evaluating a take-home assignment.
+> A reviewer cloning this repo should be able to run everything with zero account setup. Newman only needs `npm install -g newman`. The Postman CLI needs a Postman account, an API key, and cloud-synced collections — unnecessary friction for a hiring reviewer.
 
-Newman is the open-source, standalone CLI runner maintained by the Postman team. It reads the same collection/environment JSON files, executes the same `pm.test()` scripts, and produces the same pass/fail exit codes — without requiring authentication to any external service.
+Newman is the open-source CLI runner. It reads the same JSON files, runs the same `pm.test()` scripts, and gives the same pass/fail results — no login required.
 
 ## CI Integration
 
-The GitHub Actions workflow (`.github/workflows/api-tests.yml`) runs on every push and PR to `main`:
+The GitHub Actions workflow (`.github/workflows/api-tests.yml`) runs on every push/PR to `main`:
 
-1. Checks out the repo
-2. Sets up Node.js (latest)
-3. Installs Newman + HTML reporter globally
-4. Runs the collection from `api-testing/postman/`
-5. Uploads `report.html` as a build artifact (even on failure, via `if: always()`)
+1. Checkout repo
+2. Install Node.js
+3. Install Newman + HTML reporter
+4. Run collection from `api-testing/postman/`
+5. Upload `report.html` as artifact (even on failure, via `if: always()`)
 
-Newman exits with code 1 on any failed `pm.test()` assertion, which naturally fails the CI build — no `--suppress-exit-code` is used.
+Newman exits with code 1 on any failed assertion, which fails the CI build.

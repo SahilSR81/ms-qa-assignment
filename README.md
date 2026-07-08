@@ -1,6 +1,6 @@
 # MSAI — QA Engineering Assignment
 
-A complete QA engineering submission for the MSAI Online Event Registration Platform, covering strategy, test design, root cause analysis, API testing, and end-to-end automation.
+QA submission for the MSAI Online Event Registration Platform. Covers test strategy, test cases, root cause analysis, API testing, and a Selenium automation project.
 
 ![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)
 ![Selenium](https://img.shields.io/badge/Selenium-4.44-green.svg)
@@ -13,7 +13,7 @@ A complete QA engineering submission for the MSAI Online Event Registration Plat
 
 ## Quick Start
 
-### 1. Run Selenium Tests
+### Run Selenium Tests
 ```bash
 cd automation/
 python3 -m venv venv
@@ -22,7 +22,7 @@ pip install -r requirements.txt
 pytest
 ```
 
-### 2. Run API Tests (Newman)
+### Run API Tests (Newman)
 ```bash
 npm install -g newman
 cd api-testing/postman
@@ -35,14 +35,12 @@ newman run collection.json -e environment.json
 
 ## What's Included
 
-The repository contains the following core components:
-
-* **QA Strategy**: A detailed risk-based strategy for launch day, specifying test types, prioritized features, and launch criteria.
-* **Test Case Design**: 15 structured test cases covering five event modules, with a 5-test critical path selection.
-* **Root Cause Analysis (RCA)**: Step-by-step diagnostic procedures for three production bug scenarios, including logs and systems to inspect.
-* **API Testing**: A comprehensive written approach covering validation logic and positive/negative test cases for six API endpoints.
-* **Automation Suite**: A Selenium POM framework written in Python with pytest, running in continuous integration across Chrome and Firefox.
-* **Postman Collection**: A runnable 21-request suite testing contract validation and data chaining against an local Node.js mock server.
+- **QA Strategy** — Risk-based strategy for launch day. Covers test types, feature priorities, and release criteria.
+- **Test Cases** — 15 test cases across 5 modules with a 5-test critical path selection.
+- **Root Cause Analysis** — How I'd investigate 3 production bug scenarios step by step.
+- **API Testing** — Written approach for all 6 endpoints with positive, negative, and edge cases.
+- **Automation** — Selenium POM framework in Python using pytest, runs in CI on Chrome and Firefox.
+- **AI Usage** — What AI tools I used, how they helped, and how I verified their output.
 
 ---
 
@@ -50,118 +48,98 @@ The repository contains the following core components:
 
 | Part | Deliverable | Path |
 |------|-------------|------|
-| Part 1 — QA Strategy | Risk-based test strategy for a first production launch | [qa-strategy/README.md](qa-strategy/README.md) |
-| Part 2 — Test Case Design | 15 structured test cases across 5 modules with prioritization | [test-cases/README.md](test-cases/README.md) |
-| Part 3 — Root Cause Analysis | Investigation approach for 3 production scenarios | [rca/README.md](rca/README.md) |
+| Part 1 — QA Strategy | Risk-based test strategy for first production launch | [qa-strategy/README.md](qa-strategy/README.md) |
+| Part 2 — Test Case Design | 15 test cases across 5 modules with prioritization | [test-cases/README.md](test-cases/README.md) |
+| Part 3 — Root Cause Analysis | How I'd investigate 3 production scenarios | [rca/README.md](rca/README.md) |
 | Part 4 — API Testing Approach | Written approach for all 6 endpoints | [api-testing/api-testing-approach.md](api-testing/api-testing-approach.md) |
 | Part 5 — Automation (Selenium + pytest) | Page Object Model framework with CI | [automation/README.md](automation/README.md) |
-| Bonus — Postman Collection + Newman CI | 21-request API test suite with mock server | [api-testing/postman/README.md](api-testing/postman/README.md) |
+| Part 6 — AI Usage | AI tools, contributions, and validation | [ai-usage/README.md](ai-usage/README.md) |
 
-### Detailed Folder Structure
+### Folder Layout
 
 ```
 ms-qa-assignment/
 ├── .github/workflows/
-│   ├── python-app.yml           # Selenium automation CI
-│   └── api-tests.yml            # Newman API tests CI
+│   ├── python-app.yml           # Selenium CI
+│   └── api-tests.yml            # Newman CI
 ├── qa-strategy/
-│   └── README.md                # Part 1 — QA Strategy
+│   └── README.md                # Part 1
 ├── test-cases/
-│   └── README.md                # Part 2 — Test Case Design
+│   └── README.md                # Part 2
 ├── rca/
-│   └── README.md                # Part 3 — Root Cause Analysis
+│   └── README.md                # Part 3 + sample bug report
 ├── api-testing/
-│   ├── api-testing-approach.md  # Part 4 — API Testing Approach (written)
-│   └── postman/                 # Bonus — Postman/Newman suite
-│       ├── collection.json      # 21-request Postman collection
-│       ├── environment.json     # Environment variables
-│       ├── mock-server.js       # Standalone Node.js mock server
-│       └── README.md            # Postman suite documentation
+│   ├── api-testing-approach.md  # Part 4
+│   └── postman/                 # Supporting: Postman + Newman suite
+│       ├── collection.json
+│       ├── environment.json
+│       ├── mock-server.js
+│       └── README.md
+├── ai-usage/
+│   └── README.md                # Part 6
 ├── automation/
-│   ├── pages/                   # Page Object classes
-│   │   ├── base_page.py         # Core element interactions & explicit waits
-│   │   ├── cart_page.py         # Cart page actions
-│   │   ├── inventory_page.py    # Products listing page actions
-│   │   └── login_page.py        # Login page actions
-│   ├── tests/                   # Test files
+│   ├── pages/
+│   │   ├── base_page.py
+│   │   ├── cart_page.py
+│   │   ├── inventory_page.py
+│   │   └── login_page.py
+│   ├── tests/
 │   │   └── test_saucedemo_workflow.py
-│   ├── conftest.py              # Pytest fixtures and browser setup
-│   ├── pytest.ini               # Pytest configuration
-│   └── requirements.txt         # Python dependencies (pinned)
-└── README.md                    # This file
+│   ├── conftest.py
+│   ├── pytest.ini
+│   └── requirements.txt
+└── README.md
 ```
 
 ---
 
 ## Tech Stack
 
-| Technology | Purpose |
-|---|---|
-| Python | Core programming language |
-| Selenium WebDriver | Browser automation and interaction |
-| pytest | Test runner and assertion framework |
-| Selenium Manager (built-in) | Automatic browser driver management |
-| Postman + Newman | API test design and CLI execution |
-| Node.js | Local mock server execution |
-| GitHub Actions | Continuous Integration pipelines |
+| Tool | What I Used It For |
+|------|--------------------|
+| Python | Main automation language |
+| Selenium WebDriver | Browser automation |
+| pytest | Test runner |
+| Selenium Manager (built-in) | Auto driver management |
+| Postman + Newman | API testing |
+| Node.js | Mock server for API tests |
+| GitHub Actions | CI pipelines |
 
 ---
 
 ## CI Pipelines
 
-Two independent GitHub Actions workflows run on push/PR to `main`:
+Two GitHub Actions workflows run on push/PR to `main`:
 
-1. **`python-app.yml`** — Selenium automation: installs Chrome/Firefox, installs dependencies, and runs `pytest` in headless mode.
-2. **`api-tests.yml`** — API tests: installs Newman, starts the mock server, runs the collection, and uploads the HTML report as an artifact.
+1. **`python-app.yml`** — Installs Chrome/Firefox, runs Selenium tests in headless mode.
+2. **`api-tests.yml`** — Starts mock server, runs Newman collection, uploads HTML report.
 
 ---
 
 ## Assumptions
 
-* **Payment is simulated**: No real payment gateway integration is tested.
-* **Endpoints are undocumented**: API contracts for endpoints (except login) were inferred from application behavior.
-* **Single deployment environment**: No canary or blue-green infrastructure assumed.
-* **Web-only platform**: Native mobile app support is out of scope for launch.
-* **Sole QA engineer**: Bounded by single-engineer throughput.
+- Payment is **simulated** — no real gateway. I tested flow correctness, not PCI compliance.
+- Single deployment environment (staging -> prod). No blue-green or canary setup.
+- No existing load testing infrastructure or performance baselines.
+- Email service is third-party (SendGrid/SES). I can test send calls but not inbox delivery at scale.
+- Web-only for launch. No native mobile apps.
+- I'm the only QA engineer. Scope is bounded by what one person can do in the timeline.
 
 ---
 
 ## AI Tools Used
 
-| Tool | Models | Usage |
-|------|--------|-------|
-| [opencode](https://opencode.ai) / Antigravity | big-pickle (online) | Code generation, debugging, architecture suggestions, file operations |
-| [ollama](https://ollama.ai) (offline/local) | `batiai/gemma4-12b:q3`, `qwen3.5:latest` | Local code review, test case generation, documentation drafting |
+| Tool | Models | What I Used It For |
+|------|--------|--------------------|
+| [opencode](https://opencode.ai) | big-pickle (online) | Code generation, debugging, file ops, architecture suggestions |
+| [ollama](https://ollama.ai) | gemma4-12b, qwen3.5 (local) | Code review, test case drafting, documentation review |
 
-### AI Workflow
-
-* **Orchestration**: The `opencode` terminal-based agent orchestrated the directory management, file creation, and execution of test commands.
-* **Online Assistance**: The `big-pickle` model handled online queries and verified standard Selenium syntax patterns.
-* **Local Refinement**: Local `Ollama` models were used for code reviews, drafting initial documentation outlines, and validating test coverages to keep code development secure and isolated.
-* **Manual Verification**: All outputs, suggestions, and scripts generated by AI tools were manually reviewed, revised, and validated by running the test suite locally.
-
-### Example: Rejecting an AI-Generated Click Strategy
-
-During development of the SauceDemo automation, an AI model suggested using Selenium's standard `.click()` method for the burger menu and logout link. Initial tests passed locally but failed intermittently in CI with `ElementClickInterceptedException` — React was collapsing the sidebar menu before the click registered.
-
-Instead of accepting the suggestion as-is, I:
-
-1. **Investigated the root cause**: A classic React re-render race — the click target was being replaced in the DOM between WebDriver locating it and executing the click.
-2. **Iterated on a fix**:
-   - `.click()` with `WebDriverWait` — still flaky
-   - `.click()` wrapped in try/except with retries — improved but not reliable
-   - Final solution: `JavaScript click()` via `executeScript` inside a `click_until_visible` retry loop — stable across all CI runs
-3. **Generalized the pattern**: Added `js_click()` and `click_until_*` retry methods to `BasePage`, making the hybrid JS-click pattern reusable across all page objects.
-
-The AI's original suggestion was correct for simple static pages, but I rejected it because it didn't account for React's asynchronous DOM replacement. The evidence of this iteration is visible in the `test_debug*.py` scripts in the `debug-scripts/` directory, which trace the progression from standard click to JS click.
+I used AI as a coding assistant — it helped with boilerplate, code structure suggestions, and reviewing drafts. But everything was manually reviewed, tested, and often rewritten. Nothing went in without being verified. Details in [ai-usage/README.md](ai-usage/README.md).
 
 ---
 
 ## Troubleshooting
 
-### 1. Automation Framework Issues
-Please refer to the troubleshooting section in [automation/README.md](automation/README.md).
+**Selenium issues** — See [automation/README.md](automation/README.md).
 
-### 2. Newman Mock Server Connection Refused
-* **Issue:** `connect ECONNREFUSED 127.0.0.1:3000` when running Newman.
-* **Solution:** Verify that the mock server is running before executing Newman (`node mock-server.js`).
+**Newman connection refused** — Make sure mock server is running: `node mock-server.js` before running Newman.

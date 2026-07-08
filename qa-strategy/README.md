@@ -2,65 +2,64 @@
 
 ## 1. Types of Testing
 
-| Type | Why It Matters for This App |
-|------|-----------------------------|
-| **Functional** | The core user journey (register account → log in → browse events → register for event → pay → receive confirmation → view history) must work end-to-end. A single broken step blocks revenue. |
-| **Integration** | Payment processing, event registration, and confirmation email depend on multiple services communicating correctly. The payment-to-registration handoff is the highest-risk integration point — a successful charge with no registration record is a support escalation. |
-| **API** | Six REST endpoints underpin the entire frontend. Validating contracts (status codes, payload shapes, auth enforcement) at the API layer catches issues faster and cheaper than UI tests. |
-| **Regression** | As the first release, the regression suite is small but critical. Every bug fix before launch must be verified against the existing happy-path flows to prevent whack-a-mole regressions. |
-| **Security (lite)** | Auth token handling, session expiry during checkout, and payment input sanitization are must-checks. Full penetration testing is out of scope for a solo QA engineer at launch, but OWASP top-10 spot checks on auth and injection are non-negotiable. |
-| **Performance (lite)** | Event browse pages with large event lists and concurrent registration spikes (e.g., a popular event dropping) can expose slow queries or race conditions. Basic load profiling of the events list and registration endpoint under modest concurrency is warranted. |
-| **Cross-browser** | Registration and payment forms must render and submit correctly on Chrome, Firefox, and Safari. Edge cases like autofill behavior on payment forms vary across browsers. |
+| Type | Why It Matters |
+|------|----------------|
+| **Functional** | The core flow (register → login → browse → register for event → pay → confirm → view history) has to work end to end. One broken step and users are stuck. |
+| **Integration** | Payment, registration, and email all talk to each other. The payment-to-registration handoff is the riskiest part — a successful charge with no registration record is a support nightmare. |
+| **API** | All 6 REST endpoints power the frontend. Testing contracts (status codes, payload shapes, auth) at the API layer catches bugs faster than UI tests. |
+| **Regression** | Small suite for first release, but every bug fix needs to be checked against the happy path to avoid whack-a-mole regressions. |
+| **Security (lite)** | Auth token handling, session expiry during checkout, payment input sanitization. Full pen testing is out of scope for a solo QA, but OWASP top-10 spot checks on auth and injection are non-negotiable. |
+| **Performance (lite)** | Event browse pages with big lists and concurrent registration spikes can expose slow queries or race conditions. I'd run basic load profiling on the events list and registration endpoint. |
+| **Cross-browser** | Registration and payment forms need to work on Chrome, Firefox, and Safari. Autofill behavior on payment forms varies across browsers. |
 
-## 2. Feature Prioritization
+## 2. Feature Priorities
 
-Ordered by **user journey position × revenue impact**:
+Ordered by how critical they are to the user journey and revenue:
 
-1. **User Registration & Login** — Gate to everything. If users can't create accounts or authenticate, zero downstream usage.
-2. **Event Browsing** — Users must find and view events to register. Incorrect event data (wrong dates, capacities) erodes trust immediately.
-3. **Event Registration** — The primary conversion action. Must handle capacity limits correctly and prevent duplicate registrations without losing legitimate ones.
-4. **Payment** — Directly tied to revenue. Simulated for now, but the flow must be airtight: correct amount, idempotent submissions, clear error states for declined/timed-out payments.
-5. **Confirmation Email** — Post-payment trust signal. A missing or duplicate confirmation email generates support tickets and user anxiety.
-6. **Registration History** — Lower urgency but important for user self-service. Incorrect history (missing registrations, wrong payment status) erodes confidence.
+1. **User Registration & Login** — Gate to everything. No accounts = no users.
+2. **Event Browsing** — Users need to find events. Wrong dates or capacities lose trust fast.
+3. **Event Registration** — The main conversion action. Must handle capacity limits and prevent duplicates without messing up legit registrations.
+4. **Payment** — Where the money comes from. Even though it's simulated, the flow needs to be solid: correct amount, no double charges, clear error messages.
+5. **Confirmation Email** — Post-payment trust signal. Missing or duplicate emails = support tickets.
+6. **Registration History** — Lower urgency but important. Wrong history (missing registrations, incorrect payment status) hurts confidence.
 
 ## 3. Highest-Risk Areas
 
-- **Payment → Registration consistency**: If the payment service succeeds but the registration write fails (or vice versa), the user is either charged without access or registered without payment. This requires transactional guarantees or compensating actions.
-- **Concurrent registration for limited-capacity events**: Two users registering for the last seat simultaneously could oversell. Requires atomic capacity checks.
-- **Email delivery reliability**: Third-party email services have transient failures. Retry logic, dead-letter handling, and duplicate-send prevention must all be verified.
-- **Session handling during checkout**: If a user's session expires between selecting an event and completing payment, the registration and payment state can become orphaned.
-- **Idempotency of payment submission**: Double-clicks, browser refreshes, or network retries on the payment endpoint could create duplicate charges if the backend isn't idempotent.
+- **Payment → Registration consistency**: If payment succeeds but the registration write fails (or the other way around), the user is either charged with no access or registered without payment. Either is bad.
+- **Concurrent registration for limited-capacity events**: Two people registering for the last seat at the same time could oversell. Needs atomic capacity checks.
+- **Email delivery reliability**: Third-party email services fail sometimes. Retry logic, dead-letter handling, and duplicate prevention all need testing.
+- **Session handling during checkout**: If a user's session expires between picking an event and paying, the registration and payment state can get orphaned.
+- **Idempotency of payment submission**: Double-clicks, page refreshes, or network retries on the payment endpoint could charge the user twice if the backend isn't idempotent.
 
 ## 4. Release Criteria
 
 | Criterion | Measure |
 |-----------|---------|
-| Zero P1 (critical) bugs open | No blocking defects in registration, login, payment, or confirmation flows |
-| Critical path automated and green | End-to-end happy-path test (register → login → browse → register for event → pay → confirm) passing in CI |
-| Zero-flakiness CI automation | Test suite passes 100% of the time in headless CI environments without reliance on hardcoded `time.sleep()` |
-| API contract tests passing | All 21 Postman/Newman assertions green against the live API |
-| Cross-browser smoke pass | Manual smoke of registration + payment on Chrome, Firefox|
-| Rollback plan documented | Documented procedure to revert deployment within 15 minutes if a P1 is discovered post-launch |
-| Email delivery verified | At least one end-to-end confirmation email received in a real inbox (not just API-level) in staging |
-
+| Zero P1 bugs open | No blocking defects in registration, login, payment, or confirmation |
+| Critical path automated and passing | End-to-end happy-path test green in CI |
+| Zero flakiness in CI | Test suite passes 100% in headless CI — no `time.sleep()` hacks |
+| API contract tests passing | All 21 Newman assertions green against the live API |
+| Cross-browser smoke pass | Manual smoke of registration + payment on Chrome, Firefox |
+| Rollback plan documented | Procedure to revert deployment within 15 min if a P1 is found post-launch |
+| Email delivery verified | At least one real confirmation email received in staging |
 
 ## 5. Assumptions
 
-- Payment is **simulated** — no real payment gateway or money movement. Testing focuses on flow correctness, not PCI compliance.
-- Single deployment environment (staging → production). No blue-green or canary infrastructure.
-- No existing load testing infrastructure or baseline performance metrics to compare against.
-- Email service is a third-party integration (e.g., SendGrid, SES) — we can test send calls but not inbox delivery at scale.
-- The platform is web-only for launch; no native mobile apps.
-- I am the sole QA engineer. Testing scope is bounded by one person's throughput over the available timeline.
+- Payment is **simulated** — no real money movement. Testing is about flow correctness, not PCI compliance.
+- Single deployment environment (staging → production). No blue-green or canary.
+- No existing load testing infrastructure or performance baselines.
+- Email service is a third-party integration. I can test send calls but not inbox delivery at scale.
+- Web-only for launch — no native mobile apps.
+- I'm the sole QA engineer. Scope is limited by what one person can do.
 
-## 6. Risk-Based Thinking: What I Would NOT Test Before a Time-Constrained Launch
+## 6. What I Would NOT Test Before a Tight Launch
 
-| Deliberately Skipped | Reasoning |
-|----------------------|-----------|
-| **Full accessibility audit (WCAG AA)** | Important for inclusivity and legal compliance, but a comprehensive audit requires specialized tooling and takes days. I would schedule this for sprint 2 and limit launch-day checks to keyboard navigability of the checkout flow. |
-| **Exhaustive performance/load testing** | Without baseline metrics or load infrastructure, a full load test is not achievable before launch. I'd run a quick smoke under 50 concurrent users on the registration endpoint to catch obvious bottlenecks, but defer capacity planning to post-launch. |
-| **Internationalization / localization** | If the app launches in a single locale, i18n testing is deferred entirely. Currency formatting in payment is the one exception I'd spot-check. |
-| **Legacy browser support (IE, old Edge)** | Market share too small to justify blocking launch. Tested on current Chrome, Firefox, Safari only. |
-| **Admin/back-office workflows** | User-facing flows are the revenue path. Admin tooling bugs are inconvenient but not launch-blocking. |
+| Skipped | Reasoning |
+|---------|-----------|
+| **Full accessibility audit (WCAG AA)** | Important, but a full audit needs specialized tooling and takes days. I'd schedule it for sprint 2 and just check keyboard navigability of checkout for launch. |
+| **Full performance/load testing** | No baselines or infrastructure to compare against. I'd run a quick smoke test with 50 concurrent users on registration to catch obvious issues, but defer proper load testing. |
+| **Internationalization / localization** | If the app launches in one locale, i18n testing can wait. I'd spot-check currency formatting in payment. |
+| **Legacy browser support (IE, old Edge)** | Too small a market share to block launch. Tested on current Chrome, Firefox, Safari only. |
+| **Admin/back-office workflows** | User-facing flows are the revenue path. Admin bugs are annoying but not launch-blocking. |
 
-This is a tradeoff, not a shortcut — each skipped area is tracked as a known-risk item with a planned follow-up date, not silently ignored.
+This is a conscious tradeoff, not a shortcut. Each skipped area is tracked as a known risk with a follow-up date.
