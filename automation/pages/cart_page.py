@@ -14,12 +14,6 @@ class CartPage(BasePage):
             return len(self.find_elements(self.CART_ITEM))
         return 0
 
-    def wait_for_cart_items_count(self, expected_count):
-        if expected_count == 0:
-            self.wait_for_invisibility(self.CART_ITEM)
-        else:
-            self.wait.until(lambda driver: len(driver.find_elements(*self.CART_ITEM)) == expected_count)
-
     def remove_product(self, product_id):
         # e.g., remove-sauce-labs-backpack
         remove_btn = (By.ID, f"remove-{product_id}")
@@ -30,3 +24,4 @@ class CartPage(BasePage):
     def continue_shopping(self):
         self.click(self.CONTINUE_SHOPPING_BTN)
         self.wait_for_url("inventory.html")
+
