@@ -25,6 +25,12 @@ class InventoryPage(BasePage):
         self.js_click(self.CART_LINK)
         self.wait_for_url("cart.html")
 
+    def wait_for_cart_badge_count(self, expected_count):
+        if expected_count == 0:
+            self.wait_for_invisibility(self.CART_BADGE)
+        else:
+            self.wait_for_text_in_element(self.CART_BADGE, str(expected_count))
+
     def logout(self):
         self.click(self.BURGER_MENU_BTN)
         # Sidebar slide-in animation intercepts pointer events until CSS transition completes; JS click bypasses interception

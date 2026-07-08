@@ -60,3 +60,9 @@ class BasePage:
 
     def wait_for_staleness(self, element):
         self.wait.until(EC.staleness_of(element))
+
+    def wait_for_text_in_element(self, locator, text):
+        self.wait.until(EC.text_to_be_present_in_element(locator, text))
+
+    def wait_for_invisibility(self, locator):
+        self.wait.until(EC.invisibility_of_element_located(locator))

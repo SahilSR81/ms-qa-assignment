@@ -21,11 +21,13 @@ class TestSauceDemoWorkflow:
         inventory_page.add_product_to_cart("sauce-labs-bike-light")
 
         # 4. Verify cart badge shows 2
+        inventory_page.wait_for_cart_badge_count(2)
         badge_count = inventory_page.get_cart_badge_count()
         assert badge_count == 2, f"Expected cart badge to show 2, but got {badge_count}"
 
         # 5. Go to cart, verify both products present
         inventory_page.go_to_cart()
+        cart_page.wait_for_cart_items_count(2)
         items_count = cart_page.get_cart_items_count()
         assert items_count == 2, f"Expected 2 products in the cart, but found {items_count}"
 
@@ -34,6 +36,7 @@ class TestSauceDemoWorkflow:
 
         # 7. Verify cart badge updates to 1
         # Re-using inventory_page method since the badge is in the global header
+        inventory_page.wait_for_cart_badge_count(1)
         badge_count = inventory_page.get_cart_badge_count()
         assert badge_count == 1, f"Expected cart badge to show 1 after removal, but got {badge_count}"
 
@@ -42,6 +45,7 @@ class TestSauceDemoWorkflow:
         inventory_page.add_product_to_cart("sauce-labs-bolt-t-shirt")
 
         # 9. Verify cart badge shows 2 again
+        inventory_page.wait_for_cart_badge_count(2)
         badge_count = inventory_page.get_cart_badge_count()
         assert badge_count == 2, f"Expected cart badge to show 2 after adding another product, but got {badge_count}"
 
