@@ -1,6 +1,6 @@
-# MeetStream AI — API Test Suite (Postman + Newman)
+# MSAI — API Test Suite (Postman + Newman)
 
-A production-grade Postman collection for testing the MeetStream AI event management REST API, designed to run locally or in CI with zero external account dependencies.
+A production-grade Postman collection for testing the MSAI event management REST API, designed to run locally or in CI with zero external account dependencies.
 
 ## What's Covered
 
@@ -71,7 +71,7 @@ No tokens or IDs are hardcoded anywhere. The environment file declares all varia
 ## How to Import & Run in Postman GUI
 
 1. Open Postman → **Import** → drag in both `collection.json` and `environment.json`
-2. Select the **"MeetStream AI - API Testing"** environment from the top-right dropdown
+2. Select the **"MSAI - API Testing"** environment from the top-right dropdown
 3. Update `base_url` in the environment if your server isn't at `http://localhost:3000`
 4. Click **Runner** → select the collection → ensure the environment is selected → **Run**
 

@@ -37,10 +37,12 @@ Ordered by **user journey position × revenue impact**:
 |-----------|---------|
 | Zero P1 (critical) bugs open | No blocking defects in registration, login, payment, or confirmation flows |
 | Critical path automated and green | End-to-end happy-path test (register → login → browse → register for event → pay → confirm) passing in CI |
+| Zero-flakiness CI automation | Test suite passes 100% of the time in headless CI environments without reliance on hardcoded `time.sleep()` |
 | API contract tests passing | All 21 Postman/Newman assertions green against the live API |
 | Cross-browser smoke pass | Manual smoke of registration + payment on Chrome, Firefox, Safari |
 | Rollback plan documented | Documented procedure to revert deployment within 15 minutes if a P1 is discovered post-launch |
 | Email delivery verified | At least one end-to-end confirmation email received in a real inbox (not just API-level) in staging |
+
 
 ## 5. Assumptions
 

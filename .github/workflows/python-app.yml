@@ -6,11 +6,13 @@ on:
     paths:
       - 'automation/**'
       - '.github/workflows/python-app.yml'
+      - '!**/*.md'
   pull_request:
     branches: [ main, master ]
     paths:
       - 'automation/**'
       - '.github/workflows/python-app.yml'
+      - '!**/*.md'
 
 jobs:
   build:

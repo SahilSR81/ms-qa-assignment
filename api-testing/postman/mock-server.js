@@ -80,7 +80,7 @@ const server = http.createServer((req, res) => {
                 events: [
                     {
                         id: "event_999",
-                        title: "MeetStream AI Tech Keynote",
+                        title: "MSAI Tech Keynote",
                         description: "Annual keynote speech on the future of AI workflows",
                         date: "2026-07-08T10:00:00Z",
                         location: "Virtual",
@@ -138,7 +138,7 @@ const server = http.createServer((req, res) => {
                     {
                         registrationId: "reg_xyz789",
                         eventId: "event_999",
-                        eventTitle: "MeetStream AI Tech Keynote",
+                        eventTitle: "MSAI Tech Keynote",
                         registeredAt: "2026-07-08T01:00:00Z",
                         paymentStatus: "paid"
                     }

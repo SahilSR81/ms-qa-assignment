@@ -154,3 +154,35 @@ Progressive slowdown during a single session points to a resource leak or accumu
 - **Database**: Run the slow query log analysis. If no slow queries appear, rule out DB as the bottleneck.
 - **Browser**: Test in an incognito window with all extensions disabled. If the slowdown disappears, it's extension-related. If it persists, compare memory usage in Chrome vs Firefox to isolate browser-specific behavior.
 - **Network**: In DevTools Network tab, sort by "Connection ID" and count unique connections. If the count grows over time without connections closing, it's a connection leak.
+
+---
+
+## Scenario 4: UI Automation tests pass locally but fail intermittently in CI (Headless Chrome) with TimeoutException on page transitions.
+
+### How I Would Investigate
+
+Flaky tests that only fail in a headless CI environment usually point to race conditions between the browser's DOM rendering speed and the WebDriver's execution speed. Since headless browsers don't have the overhead of painting to a physical screen, they execute JavaScript and transition pages much faster (or sometimes differently due to different default window sizes) than a headed browser. The key is to find out exactly *where* the test is timing out and what the DOM state is at that moment.
+
+### What Information I Would Collect
+
+- The exact line of code where the `TimeoutException` occurred from the CI logs.
+- The state of the DOM at the time of failure (using a screenshot or page source captured in the `conftest.py` failure hook).
+- The network conditions in CI compared to local (e.g., is the site loading much slower in the runner?).
+
+### Which Logs, APIs, and Systems I Would Inspect
+
+- **CI Artifacts**: View the failure screenshots attached to the GitHub Actions run.
+- **Test Framework Logs**: Look at what `WebDriverWait` condition failed (e.g., `visibility_of_element_located` vs `element_to_be_clickable`).
+- **Application Behavior**: Does the application use client-side rendering (React/Vue)? If so, a click might be hitting a stale element or getting swallowed by a re-render.
+
+### Possible Root Causes
+
+1. **Swallowed Clicks (React/Re-renders)**: The WebDriver clicks a button (e.g., "Login" or "Add to Cart") just as React is re-rendering the component. The click registers on the old DOM node, which is immediately destroyed, so the event listener never fires. The test then waits for the next page to load and times out.
+2. **Missing Page Transition Waits**: The script clicks a navigation button and immediately tries to find an element on the *next* page. If the transition takes 200ms, the `find_element` call might hit the current page, not find the element, and fail.
+3. **Viewport Size Mismatches**: The headless browser defaults to an 800x600 viewport, causing elements to be hidden behind sticky footers or off-screen, making them un-clickable via standard WebDriver methods.
+
+### How I Would Verify Before Reporting
+
+- Take a screenshot exactly when the exception is caught. If the screenshot shows the test is still on the *previous* page, the click was swallowed (Cause 1).
+- Enforce `--window-size=1920,1080` in the headless Chrome options and see if the flakiness disappears (Cause 3).
+- Implement a custom retry mechanism (`click_until_url`) that clicks the button, waits 1 second for the URL to change, and if not, clicks it again via JavaScript (to bypass overlay/re-render issues). If this eliminates the flakiness entirely, Cause 1 is confirmed. (This is exactly the pattern successfully implemented in the `BasePage` framework of this assignment).

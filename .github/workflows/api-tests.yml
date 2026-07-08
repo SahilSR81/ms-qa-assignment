@@ -6,11 +6,13 @@ on:
     paths:
       - 'api-testing/**'
       - '.github/workflows/api-tests.yml'
+      - '!**/*.md'
   pull_request:
     branches: [ main, master ]
     paths:
       - 'api-testing/**'
       - '.github/workflows/api-tests.yml'
+      - '!**/*.md'
 
 jobs:
   api-tests:

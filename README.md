@@ -1,6 +1,6 @@
-# MeetStream AI — QA Engineering Assignment
+# MSAI — QA Engineering Assignment
 
-A complete QA engineering submission for the MeetStream AI Online Event Registration Platform, covering strategy, test design, root cause analysis, API testing, and end-to-end automation.
+A complete QA engineering submission for the MSAI Online Event Registration Platform, covering strategy, test design, root cause analysis, API testing, and end-to-end automation.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![Selenium](https://img.shields.io/badge/Selenium-4.44+-green.svg)
@@ -146,11 +146,11 @@ Two independent GitHub Actions workflows run on push/PR to `main`:
 
 ## AI Tools Used
 
-<!-- PLACEHOLDER: Fill in the specific AI tools you used and how you used them -->
-> **Note to submitter**: Replace this section with your actual AI tool usage per the assignment's Part 6 requirement. Example format:
->
-> - **Tool name**: What you used it for (e.g., "generating initial test case outlines", "debugging Selenium locator issues", "reviewing API contract assumptions")
-> - Include what you validated/modified after generation
+- **DeepMind Agentic Assistant (Antigravity)**: Used as a pair-programming partner throughout the assignment.
+  - **Debugging Headless CI Flakiness**: The AI helped diagnose intermittent `TimeoutException` and `StaleElementReferenceException` errors occurring only in the GitHub Actions headless environment. It identified that DOM re-renders and React state changes were swallowing standard Selenium clicks.
+  - **Framework Design**: Assisted in designing the resilient `click_until_url` helper in the `BasePage` class, and migrating brittle `time.sleep()` calls to dynamic `WebDriverWait` polling methods (e.g., `wait_for_cart_badge_count`, `wait_for_staleness`).
+  - **Documentation**: Aided in generating structural templates for the QA strategy, Test Cases, and RCA documentation.
+  - **Validation**: All AI-suggested code was manually reviewed, executed locally both headed and headless, and verified against the CI pipeline to ensure zero flakiness.
 
 ## Troubleshooting
 
