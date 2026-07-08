@@ -59,6 +59,24 @@ class BasePage:
                         self.click(click_locator)
                     self.wait.until(EC.presence_of_element_located(target_locator))
 
+    def click_until_visible(self, click_locator, target_locator, max_retries=3, use_js=False):
+        for i in range(max_retries):
+            try:
+                if use_js:
+                    self.js_click(click_locator)
+                else:
+                    self.click(click_locator)
+                # Wait a short duration for the target element to become visible
+                WebDriverWait(self.driver, 2).until(EC.visibility_of_element_located(target_locator))
+                return
+            except Exception:
+                if i == max_retries - 1:
+                    if use_js:
+                        self.js_click(click_locator)
+                    else:
+                        self.click(click_locator)
+                    self.wait.until(EC.visibility_of_element_located(target_locator))
+
     def wait_for_staleness(self, element):
         self.wait.until(EC.staleness_of(element))
 

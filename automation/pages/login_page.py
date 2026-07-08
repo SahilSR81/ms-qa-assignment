@@ -21,7 +21,7 @@ class LoginPage(BasePage):
         if expect_success:
             self.click_until_url(self.LOGIN_BUTTON, "inventory.html")
         else:
-            self.click_until_present(self.LOGIN_BUTTON, self.ERROR_MESSAGE)
+            self.click_until_visible(self.LOGIN_BUTTON, self.ERROR_MESSAGE)
 
     def get_error_message(self):
         if self.is_visible(self.ERROR_MESSAGE):
