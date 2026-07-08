@@ -37,3 +37,10 @@ jobs:
       working-directory: ./automation
       run: |
         pytest
+
+    - name: Upload screenshots on failure
+      uses: actions/upload-artifact@v6
+      if: failure()
+      with:
+        name: failure-screenshots
+        path: automation/screenshots/

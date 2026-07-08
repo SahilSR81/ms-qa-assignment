@@ -14,7 +14,7 @@ class InventoryPage(BasePage):
     def add_product_to_cart(self, product_id):
         add_btn = (By.ID, f"add-to-cart-{product_id}")
         remove_btn = (By.ID, f"remove-{product_id}")
-        self.click_until_present(add_btn, remove_btn)
+        self.click_until_present(add_btn, remove_btn, use_js=True)
 
     def get_cart_badge_count(self):
         if self.is_visible(self.CART_BADGE):

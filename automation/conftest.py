@@ -34,3 +34,19 @@ def setup(request):
     request.cls.driver = driver
     yield
     driver.quit()
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    outcome = yield
+    rep = outcome.get_result()
+    if rep.when == "call" and rep.failed:
+        try:
+            if hasattr(item.cls, "driver"):
+                driver = item.cls.driver
+                import os
+                os.makedirs("screenshots", exist_ok=True)
+                screenshot_path = os.path.join("screenshots", f"{item.name}.png")
+                driver.save_screenshot(screenshot_path)
+                print(f"\nSaved failure screenshot to: {screenshot_path}")
+        except Exception as e:
+            print(f"\nFailed to capture screenshot: {e}")
