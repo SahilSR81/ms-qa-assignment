@@ -85,9 +85,10 @@ class TestSauceDemoWorkflow:
 
         login_page.open()
         
-        # Clear local storage to reset cart state from previous tests running on the same browser session
-        self.driver.execute_script("window.localStorage.clear();")
-        self.driver.refresh()
+        # Clear local storage and reset the page completely to avoid React form restoration issues
+        self.driver.execute_script("window.localStorage.clear(); window.sessionStorage.clear();")
+        self.driver.get("about:blank")
+        login_page.open()
         
         login_page.login("standard_user", "secret_sauce")
 
