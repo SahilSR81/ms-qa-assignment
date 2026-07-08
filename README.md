@@ -9,6 +9,41 @@ A complete QA engineering submission for the MSAI Online Event Registration Plat
 [![API Tests (Newman)](https://github.com/SahilSR81/ms-qa-assignment/actions/workflows/api-tests.yml/badge.svg)](https://github.com/SahilSR81/ms-qa-assignment/actions/workflows/api-tests.yml)
 ![License](https://img.shields.io/badge/License-MIT-purple.svg)
 
+## Quick Start
+
+To execute the test suites immediately:
+
+### 1. Run UI Automation Tests (Selenium + pytest)
+```bash
+cd automation/
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pytest
+```
+
+### 2. Run API Contract Tests (Postman + Newman)
+```bash
+cd api-testing/postman/
+npm install -g newman
+node mock-server.js &
+sleep 2
+newman run collection.json -e environment.json
+```
+
+---
+
+## What's Included
+
+The submission is structured into the following key components:
+
+*   **QA Strategy & Design**: A comprehensive risk-based test strategy for the initial launch and 15 detailed test cases spanning authentication, payments, and notifications.
+*   **Root Cause Analysis (RCA)**: Step-by-step investigation procedures for three critical production failure scenarios.
+*   **API Validation**: Pinned-down contract validation for the platform's backend endpoints, backed by a Node.js mock server and Newman test suite.
+*   **E2E Automation**: A complete Selenium Python framework implementing the Page Object Model (POM) to automate user flows on SauceDemo.
+
+---
+
 ## Repository Structure
 
 | Part | Deliverable | Path |
@@ -32,7 +67,8 @@ ms-qa-assignment/
 ├── test-cases/
 │   └── README.md                # Part 2 — Test Case Design
 ├── rca/
-│   └── README.md                # Part 3 — Root Cause Analysis
+│   ├── README.md                # Part 3 — Root Cause Analysis
+│   └── sample-bug-report.md     # Jira-style bug report for Scenario 1
 ├── api-testing/
 │   ├── api-testing-approach.md  # Part 4 — API Testing Approach (written)
 │   └── postman/                 # Bonus — Postman/Newman suite
@@ -54,6 +90,8 @@ ms-qa-assignment/
 └── README.md                    # This file
 ```
 
+---
+
 ## Tech Stack
 
 | Technology | Purpose |
@@ -65,6 +103,8 @@ ms-qa-assignment/
 | Postman + Newman | API test design (GUI) and CI-ready CLI execution |
 | Node.js | Lightweight mock server for API tests |
 | GitHub Actions | Continuous Integration — two pipelines (automation + API tests) |
+
+---
 
 ## Setup Instructions
 
@@ -87,6 +127,8 @@ sleep 2
 newman run collection.json -e environment.json
 ```
 
+---
+
 ## How to Run Tests
 
 ### API Tests
@@ -96,12 +138,16 @@ cd api-testing/postman/
 newman run collection.json -e environment.json --reporters cli,htmlextra --reporter-htmlextra-export report.html
 ```
 
+---
+
 ## CI Pipelines
 
 Two independent GitHub Actions workflows run on push/PR to `main`:
 
 1. **`python-app.yml`** — Selenium automation: installs Chrome, installs pinned Python dependencies, runs `pytest` in headless mode.
 2. **`api-tests.yml`** — API tests: installs Node.js + Newman, starts the mock server, runs the full 21-request Postman collection, uploads the HTML report as a build artifact.
+
+---
 
 ## Assumptions
 
@@ -112,13 +158,22 @@ Two independent GitHub Actions workflows run on push/PR to `main`:
 - **Selenium Manager**: The project uses Selenium 4.44's built-in driver management — no `webdriver-manager` package dependency.
 - **Sole QA engineer**: All testing scope is bounded by one person's throughput.
 
-## AI Tools Used
+---
 
-- **DeepMind Agentic Assistant (Antigravity)**: Used as a pair-programming partner throughout the assignment.
-  - **Debugging Headless CI Flakiness**: The AI helped diagnose intermittent `TimeoutException` errors.
-  - **Framework Design (Modified AI Suggestion)**: Early on, the AI suggested using `time.sleep()` after clicking buttons to wait for page transitions (a common pattern in generic Selenium tutorials). I explicitly rejected this approach because hardcoded sleeps either waste execution time or cause flakiness depending on CI runner speed. I directed the AI to replace all static sleeps with explicit `WebDriverWait` polling (e.g., `wait_for_staleness`), which is the robust pattern that ships in the final `BasePage` class today. <!-- SAHIL: Verify this accurately reflects your process before submission -->
-  - **Documentation**: Aided in generating structural templates for the QA strategy, Test Cases, and RCA documentation.
-  - **Validation**: All AI-suggested code was manually reviewed and verified.
+#### AI Tools Used
+
+| Tool | Models | Usage |
+|------|--------|-------|
+| [opencode](https://opencode.ai) / Antigravity | big-pickle (online) | Code generation, debugging, architecture suggestions, file operations |
+| [ollama](https://ollama.ai) (offline/local) | `batiai/gemma4-12b:q3`, `qwen3.5:latest` | Local code review, test case generation, documentation drafting |
+
+**Workflow Details:**
+- **Opencode** orchestrated the project using a terminal-based agent.
+- **Big-pickle** handled online queries via eza for free access.
+- **Ollama** models ran locally for sensitive work and iterative refinement.
+- All AI outputs were manually reviewed, tested, and often modified. For example, when an AI tool initially suggested static `time.sleep()` calls for page navigation, this was rejected in favor of explicit `WebDriverWait` polling to ensure the CI pipeline runs stably.
+
+---
 
 ## Troubleshooting
 

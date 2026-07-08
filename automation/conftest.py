@@ -1,14 +1,16 @@
+from __future__ import annotations
+from typing import Generator, Any
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
-def pytest_addoption(parser):
+def pytest_addoption(parser: Any) -> None:
     parser.addoption("--browser_name", action="store", default="chrome")
     parser.addoption("--headless", action="store", default="true", help="Run browser in headless mode (true/false)")
 
 @pytest.fixture(scope="class")
-def setup(request):
+def setup(request: Any) -> Generator[None, None, None]:
     browser_name = request.config.getoption("browser_name")
     headless = request.config.getoption("headless").lower() == "true"
     
@@ -36,7 +38,7 @@ def setup(request):
     driver.quit()
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
+def pytest_runtest_makereport(item: Any, call: Any) -> Generator[None, Any, Any]:
     outcome = yield
     rep = outcome.get_result()
     if rep.when == "call" and rep.failed:
